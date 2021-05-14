@@ -1,5 +1,5 @@
 ## David Teuscher
-## Latest changes: 12.05.2021
+## Latest changes: 14.05.2021
 ## This script reads in play by play data for WNBA games and determines that 
 ## players on the court at the time
 ########################################################
@@ -10,46 +10,49 @@ library(wehoop)
 library(tidyverse)
 
 # Read in the play by play data for the Dallas Wings vs. Atlanta Dream on May 24, 2019
-data <- espn_wnba_pbp(game_id = "401104913")
+pbp <- espn_wnba_pbp(game_id = "401104913")
 
 # Bring in the box score data and filter for only the starters to get the lineup at the 
 # beginning of the game
 box_score <- wehoop::espn_wnba_player_box(game_id = "401104913") %>%
   filter(starter == TRUE)
 
-# Take the play by play data and combine it with the starters
-# Combine the starters into a single column for the current lineup so it is
-# easier to replace players as the game goes on using regular expressions
-pbp <- cbind(data, Player = t(box_score$athlete.displayName)) %>% 
-  unite(col = "Lineup1", 26:30, sep = ",") %>%
-  unite(col = "Lineup2", 21:25, sep = ",")
+# Create empty vectors for the lineups for both teams
+# Length is the same length as the play by play 
+LineupAway <- character(nrow(pbp))
+LineupHome <- character(nrow(pbp))
 
-# Filters the play by play data for only the substitutions 
-subs <- pbp %>% filter(type.text == "Substitution") 
+# Set the starting lineup for both teams; 
+# Away team is always the first 5 players
+# Home team is the second 5 players
+LineupAway[1] <- paste(box_score$athlete.displayName[1:5], collapse = ",")
+LineupHome[1] <- paste(box_score$athlete.displayName[6:10], collapse = ",")
 
-# Determine the player that is subbed into the game and subbed out of the game
-player_in <- str_extract(subs$text, "^^[A-Z][-a-zA-Z]+ [A-Z][-a-zA-Z]+")
-player_out <- str_extract(subs$text, "[A-Z][-a-zA-Z]+ [A-Z][-a-zA-Z]+$")
-
-# Initialize vectors for the different lineups during substitutions
-Lineup1 <- numeric(nrow(subs))
-Lineup2 <- numeric(nrow(subs))
-
-# Set the first lineup as the starters
-Lineup1[1] <- pbp$Lineup1[1]
-Lineup2[1] <- pbp$Lineup2[1]
-
-# Loop through all the substitutions in the game and change the lineup depending on 
-# whether the substitution is for team 1 or team 2
-for(i in 2:(length(Lineup1)+1)){
-  if(str_detect(Lineup1[i - 1], player_out[i - 1])){
-    Lineup1[i] <- str_replace(Lineup1[i - 1], player_out[i - 1], player_in[i -1])
-    Lineup2[i] <- Lineup2[i - 1]
-  } else{
-    Lineup2[i] <- str_replace(Lineup2[i - 1], player_out[i - 1], player_in[i - 1])
-    Lineup1[i] <- Lineup1[i - 1]
+# Loop through every row on the play by play data 
+for(i in 2:nrow(pbp)){
+  # If the play is a substitution, change the lineup
+  if(pbp$type.text[i] == "Substitution"){
+    # Determine the player coming in and the player coming out of the game
+    player_in <- str_extract(pbp$text[i], "^^[A-Z][-a-zA-Z]+ [A-Z][-a-zA-Z]+")
+    player_out <- str_extract(pbp$text[i], "[A-Z][-a-zA-Z]+ [A-Z][-a-zA-Z]+$")
+    
+    # If the player going out is on the away team, substitute the player in on the 
+    # away team. If they aren't on the away team, then sub them for the home team
+    if(str_detect(LineupAway[i -1], player_out)){
+      LineupAway[i] <- str_replace(LineupAway[i-1], player_out, player_in)
+      LineupHome[i] <- LineupHome[i-1]
+    } else{
+      LineupHome[i] <- str_replace(LineupHome[i-1], player_out, player_in)
+      LineupAway[i] <- LineupAway[i-1]
+    }
+  }
+  
+  # If it isn't a substitution, keep the lineup the same as the previous play
+  else{
+    LineupAway[i] <- LineupAway[i-1]
+    LineupHome[i] <- LineupHome[i-1]
   }
 }
 
-# This is a data set to test that the substitions are replaced correctly. 
-testlineup <- cbind(c("starter", subs$text), Lineup1, Lineup2)
+# Combine the lineup with the play by play data
+test <- pbp %>% bind_cols(LineupAway = LineupAway, LineupHome = LineupHome)
