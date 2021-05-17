@@ -25,13 +25,13 @@ LineupHome <- character(nrow(pbp))
 # Set the starting lineup for both teams; 
 # Away team is always the first 5 players
 # Home team is the second 5 players
-LineupAway[1] <- paste(box_score$athlete.displayName[1:5], collapse = ",")
-LineupHome[1] <- paste(box_score$athlete.displayName[6:10], collapse = ",")
+LineupAway[1] <- paste(box_score$athlete_display_name[1:5], collapse = ",")
+LineupHome[1] <- paste(box_score$athlete_display_name[6:10], collapse = ",")
 
 # Loop through every row on the play by play data 
 for(i in 2:nrow(pbp)){
   # If the play is a substitution, change the lineup
-  if(pbp$type.text[i] == "Substitution"){
+  if(pbp$type_text[i] == "Substitution"){
     # Determine the player coming in and the player coming out of the game
     player_in <- str_extract(pbp$text[i], "^^[A-Z][-a-zA-Z]+ [A-Z][-a-zA-Z]+")
     player_out <- str_extract(pbp$text[i], "[A-Z][-a-zA-Z]+ [A-Z][-a-zA-Z]+$")
@@ -56,3 +56,15 @@ for(i in 2:nrow(pbp)){
 
 # Combine the lineup with the play by play data
 test <- pbp %>% bind_cols(LineupAway = LineupAway, LineupHome = LineupHome)
+
+unique(test$type_text)
+head(test)
+View(test)
+# Select variables that are needed to pull out possession information
+possesion <- test %>% select(shooting_play, home_score, scoring_play, away_score,
+                             text, score_value, team_id, type_text, LineupAway,
+                             LineupHome)
+
+small <- possesion[1:20, ] %>% 
+  mutate(change_of_possession = ifelse((shooting_play == TRUE & scoring_play == TRUE) | type_text == "Defensive Rebound", 1, 0))
+View(small)
