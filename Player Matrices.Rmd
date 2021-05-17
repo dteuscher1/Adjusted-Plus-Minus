@@ -1,0 +1,31 @@
+---
+title: "IS 590R"
+output: html_document
+---
+
+```{r}
+x <- c(1, 1, 1, 0, 0, -1, -1, -1, 0, 0, 
+        1, 1, 1, 0, 0, -1, -1, 0, -1, 0, 
+        1, 0, 0, 1, 1, -1, 0, 0, -1, -1,
+        1, 0, 0, 1, 1, 0, 0, -1, -1, -1,
+        0, 1, 1, 1, 0, 0, -1, -1, -1, 0,
+        0, 1, 1, 0, 1, 0, -1, -1, 0, -1,
+        1, 1, 1, 0, 0, 0, -1, 0, -1, -1,
+        1, 1, 1, 0, 0, -1, 0, 0, -1, -1,
+        0, 0, 1, 1, 1, -1, 0, 0, -1, -1,
+        1, 0, 1, 1, 0, -1, -1, -1, 0, 0,
+        1, 0, 0, 1, 1, 0, -1, -1, -1, 0)
+lineups <- matrix(x, nrow=11, byrow = TRUE)
+transLineups <- t(lineups)
+playerInt <- transLineups %*% lineups
+differential <- c(40, -25, 60, 0, -30, -12.5, -12.5, -30, 50, 30, -50)
+difPerPlayer <- differential %*% lineups
+difPerPlayer
+```
+
+```{r}
+library(corpcor)
+psPlayerInt <- pseudoinverse(playerInt)
+betas <- difPerPlayer %*% psPlayerInt
+betas
+```
