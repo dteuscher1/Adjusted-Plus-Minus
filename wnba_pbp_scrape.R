@@ -1,5 +1,5 @@
 ## David Teuscher
-## Latest changes: 14.05.2021
+## Latest changes: 19.05.2021
 ## This script reads in play by play data for WNBA games and determines that 
 ## players on the court at the time
 ########################################################
@@ -61,10 +61,24 @@ unique(test$type_text)
 head(test)
 View(test)
 # Select variables that are needed to pull out possession information
-possesion <- test %>% select(shooting_play, home_score, scoring_play, away_score,
+possession <- test %>% select(shooting_play, home_score, scoring_play, away_score,
                              text, score_value, team_id, type_text, LineupAway,
-                             LineupHome)
+                             LineupHome, clock_display_value)
 
-small <- possesion[1:20, ] %>% 
-  mutate(change_of_possession = ifelse((shooting_play == TRUE & scoring_play == TRUE) | type_text == "Defensive Rebound", 1, 0))
-View(small)
+turnover_types <- c("Out of Bounds - Lost Ball Turnover", "Offensive Foul Turnover", "Shot Clock Turnover", "Bad Pass\nTurnover",
+                    "Lost Ball Turnover", "Out of Bounds - Bad Pass Turnover", "Traveling")
+
+change_possession <- numeric(nrow(possession))
+cond <- (possession$shooting_play == TRUE & possession$scoring_play == TRUE) | 
+  possession$type_text == "Defensive Rebound" | possession$type_text %in% turnover_types
+for(i in 2:nrow(possession)){
+  if(cond[i] == TRUE){
+    change_possession[i] <- 1
+  }
+  if(possession$type_text[i] == "Shooting Foul" & (possession$clock_display_value[i] == possession$clock_display_value[i-1])){
+    change_possession[i-1] <- 0
+  }
+}
+
+possession <- possession %>% mutate(change_possession = change_possession)
+View(possession %>% select(scoring_play, shooting_play, type_text, text, change_possession, clock_display_value))
