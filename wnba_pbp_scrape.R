@@ -56,10 +56,26 @@ for(i in 2:nrow(pbp)){
 
 # Combine the lineup with the play by play data
 test <- pbp %>% bind_cols(LineupAway = LineupAway, LineupHome = LineupHome)
+points <- sample(c(2, 3, 0), nrow(test), replace = TRUE)
+test2 <- test %>% 
+  mutate(point_diff = points) %>% 
+  separate(LineupAway, into = c("P1", "P2", "P3", "P4", "P5"), sep = ",") %>%
+  separate(LineupHome, into = c("P6", "P7", "P8", "P9", "P10"), sep = ",") %>% 
+  pivot_longer(cols = P1:P10, values_to = "Player", names_to =  NULL) %>%
+  mutate(Player = factor(Player))
 
-unique(test$type_text)
-head(test)
-View(test)
+X <- model.matrix(point_diff ~ -1 + Player, data = test2)
+
+ids <- seq(10, 4530, by = 10)
+X_small <- matrix(0, nrow = nrow(X)/10, ncol = ncol(X))
+colnames(X_small) <- colnames(X)
+for(i in ids){
+  k <- i/10
+  for(j in 1:ncol(X)){
+    X_small[k, j] <- sum(X[(i-9):i, j]) 
+  }
+}
+
 # Select variables that are needed to pull out possession information
 possession <- test %>% select(shooting_play, home_score, scoring_play, away_score,
                              text, score_value, team_id, type_text, LineupAway,
