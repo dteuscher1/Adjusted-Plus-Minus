@@ -15,17 +15,123 @@ x <- c(1, 1, 1, 0, 0, -1, -1, -1, 0, 0,
         0, 0, 1, 1, 1, -1, 0, 0, -1, -1,
         1, 0, 1, 1, 0, -1, -1, -1, 0, 0,
         1, 0, 0, 1, 1, 0, -1, -1, -1, 0)
+
+# Change the data to a matrixfor further manipulation
 lineups <- matrix(x, nrow=11, byrow = TRUE)
 transLineups <- t(lineups)
+
+# Player interactions can be expressed in a matrix by multiplying the 
+# lineups by the transpose of the lineups
 playerInt <- transLineups %*% lineups
+
+# The points differential is the difference in points, divided by number
+# of possessions, and then multiplied by 100
 differential <- c(40, -25, 60, 0, -30, -12.5, -12.5, -30, 50, 30, -50)
-difPerPlayer <- differential %*% lineups
+
+# The point differential per player can be determine by multiplying the 
+# differential matrix by the lineups matrix
+d <- differential %*% lineups
+
+# The points differential per player is then turned into a 1 column matrix
+# so further manipulation can be done
+difPerPlayer <- matrix(d, ncol = 1)
 difPerPlayer
 ```
 
 ```{r}
+
+# This library lets us take the pseudo inverse of a matrix, as we cannot 
+# take the inverse of a matrix that is not square, or has a determinant
+# equal to 0
 library(corpcor)
 psPlayerInt <- pseudoinverse(playerInt)
-betas <- difPerPlayer %*% psPlayerInt
-betas
+
+# Multiplying the pseudo inverse by the differential per player gives us
+# the values for the betas
+betas <- psPlayerInt %*% difPerPlayer
+
+# The lineups multiplied by betas gives us the predicted values for point
+# differential (although the betas differ from the website output, they 
+# yield the same predicted values)
+predicted <- lineups %*% betas
+predicted
+
+# This section allows us to see what happens when we have the same betas
+# as the website
+y <- c(-30.5, 0, -56, 36.5, -31.75, -65.5, -38.25, 8.25, 40.5, -60.75)
+desired <- matrix(y, ncol = 1)
+final <- playerInt %*% desired
+lineups %*% desired
+
+# We can then determine the approximate error by taking the difference
+# between the predicted values and the differentials, square these
+# differences, summing them up, and then dividing by the degrees of 
+# freedom
+difference <- differential - predicted
+differenceSquared <- difference ^ 2
+error <- sum(differenceSquared)
+error
+```
+
+```{r}
+# Fake Data Section
+
+f <- c(1, 1, 1, 1, 1, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0,
+       1, 1, 1, 1, 1, 0, 0, 0, 0, 0, -1, -1, -1, 0, -1, 0, -1, 0, 0, 0,
+       1, 1, 0, 1, 0, 1, 1, 0, 0, 0, -1, -1, -1, 0, -1, 0, 0, -1, 0, 0,
+       1, 1, 0, 1, 1, 1, 0, 0, 0, 0, -1, -1, 0, -1, -1, -1, 0, 0, 0, 0,
+       0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, -1, -1, -1, -1, -1, 0, 0, 0, 0,
+       0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, -1, -1, -1, -1, 0, 0, 0, -1, 0,
+       1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, -1, 0, -1, -1, -1, 0, -1, 0, 0,
+       1, 1, 1, 0, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1, 0, 0, -1, 0, 0, 0,
+       0, 1, 1, 1, 1, 0, 0, 0, 1, 0, -1, -1, 0, -1, -1, 0, 0, -1, 0, 0,
+       1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, -1, -1, -1, -1, 0, 0, 0, -1)
+
+f2 <- c(1, 1, 1, 1, 1, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0,
+       1, 1, 1, 1, 1, 0, 0, 0, 0, 0, -1, -1, -1, 0, -1, 0, -1, 0, 0, 0,
+       1, 1, 0, 1, 0, 1, 1, 0, 0, 0, -1, -1, -1, 0, -1, 0, 0, -1, 0, 0,
+       1, 1, 0, 1, 1, 1, 0, 0, 0, 0, -1, -1, 0, -1, -1, -1, 0, 0, 0, 0,
+       0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, -1, -1, -1, -1, -1, 0, 0, 0, 0,
+       0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, -1, -1, -1, -1, 0, 0, 0, -1, 0,
+       1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, -1, 0, -1, -1, -1, 0, -1, 0, 0,
+       1, 1, 1, 0, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1, 0, 0, -1, 0, 0, 0,
+       0, 1, 1, 1, 1, 0, 0, 0, 1, 0, -1, -1, 0, -1, -1, 0, 0, -1, 0, 0,
+       1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, -1, -1, -1, -1, 0, 0, 0, -1,
+       
+       1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, -1, -1, 0, 0, -1, -1, -1, 0, 0,
+       0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, -1, -1, 0, 0, -1, -1, -1, 0, 0,
+       1, 1, 1, 1, 1, 0, 0, 0, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, 0, 0,
+       1, 1, 1, 0, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0,
+       1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, -1, -1, 0, -1, 0, -1, -1,
+       0, 1, 1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, 0, -1, -1, 0, 0, 0, 0,
+       0, 1, 1, 1, 0, 1, 1, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0,
+       1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, 0, 0, 0,
+       1, 1, 0, 1, 0, 1, 1, 0, 0, 0, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0,
+       0, 0, 1, 0, 1, 0, 1, 1, 1, 0, -1, -1, -1, -1, 0, -1, 0, 0, 0, 0)
+fake <- matrix(f, ncol = 20, byrow=TRUE)
+transFake <- t(fake)
+fakeInt <- transFake %*% fake
+
+fake2 <- matrix(f2, ncol = 20, byrow = TRUE)
+transFake2 <- t(fake2)
+fakeInt2 <- transFake2 %*% fake2
+
+fakeDif <- c(40, -22.22, 0, 55.56, -28.57, -33.33, 0, 80, -41.67, 37.5)
+
+fakeDif2 <- c(40, -22.22, 0, 55.56, -28.57, -33.33, 0, 80, -41.67, 37.5,
+              83.33, -41.67, -12.5, -50, -50, 0, 33.33, 0, 40, 33.33)
+
+fakeDifPerPlayer <- fakeDif %*% fake
+fakeDifPerPlayer2 <- fakeDif2 %*% fake2
+
+fakeDifPerPlayer <- matrix(fakeDifPerPlayer, ncol = 1)
+psFakeInt <- pseudoinverse(fakeInt)
+fakeBetas <- psFakeInt %*% fakeDifPerPlayer
+fakeBetas
+```
+
+
+```{r}
+
+
 ```
