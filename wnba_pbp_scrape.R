@@ -87,13 +87,28 @@ turnover_types <- c("Out of Bounds - Lost Ball Turnover", "Offensive Foul Turnov
 change_possession <- numeric(nrow(possession))
 cond <- (possession$shooting_play == TRUE & possession$scoring_play == TRUE) | 
   possession$type_text == "Defensive Rebound" | possession$type_text %in% turnover_types
+
+free_throws <- c("Free Throw - 1 of 2", "Free Throw - 1 of 3", "Free Throw - 2 of 3", "Free Throw - Technical")
+# Free throws with substitutions in the middle
+
 for(i in 2:nrow(possession)){
   if(cond[i] == TRUE){
     change_possession[i] <- 1
   }
-  if(possession$type_text[i] == "Shooting Foul" & (possession$clock_display_value[i] == possession$clock_display_value[i-1])){
+  if(possession$type_text[i] == "Shooting Foul" && (possession$clock_display_value[i] == possession$clock_display_value[i-1])){
     change_possession[i-1] <- 0
   }
+  if((possession$type_text[i] == "Free Throw - 1 of 1" || 
+     possession$type_text[i] == "Free Throw - 2 of 2" || 
+     possession$type_text[i] == "Free Throw - 3 of 3") && 
+     (possession$type_text[i-1] == "Substitution")){
+    change_possession[i] <- 0
+    change_possession[i-1] <- 1
+  }
+  if(possession$type_text[i] %in% free_throws){
+    change_possession[i] <- 0
+  }
+  
 }
 
 possession <- possession %>% mutate(change_possession = change_possession)
