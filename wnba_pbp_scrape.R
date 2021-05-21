@@ -70,7 +70,6 @@ cond <- (possession$shooting_play == TRUE & possession$scoring_play == TRUE) |
   possession$type_text == "Defensive Rebound" | possession$type_text %in% turnover_types
 
 free_throws <- c("Free Throw - 1 of 2", "Free Throw - 1 of 3", "Free Throw - 2 of 3", "Free Throw - Technical")
-# Free throws with substitutions in the middle
 
 for(i in 2:nrow(possession)){
   if(cond[i] == TRUE){
@@ -100,6 +99,8 @@ LineupAway <- numeric(length(point_diff))
 LineupHome <- numeric(length(point_diff))
 home_points <- numeric(length(point_diff))
 away_points <- numeric(length(point_diff))
+LineupAway[1] <- paste(box_score$athlete_display_name[1:5], collapse = ",")
+LineupHome[1] <- paste(box_score$athlete_display_name[6:10], collapse = ",")
 home_points[1] <- 0
 away_points[1] <- 0
 k <- 2
