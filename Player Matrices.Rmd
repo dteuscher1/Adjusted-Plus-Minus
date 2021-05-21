@@ -16,7 +16,7 @@ x <- c(1, 1, 1, 0, 0, -1, -1, -1, 0, 0,
         1, 0, 1, 1, 0, -1, -1, -1, 0, 0,
         1, 0, 0, 1, 1, 0, -1, -1, -1, 0)
 
-# Change the data to a matrixfor further manipulation
+# Change the data to a matrix for further manipulation
 lineups <- matrix(x, nrow=11, byrow = TRUE)
 transLineups <- t(lineups)
 
@@ -56,6 +56,10 @@ betas <- psPlayerInt %*% difPerPlayer
 predicted <- lineups %*% betas
 predicted
 
+# The above betas all sum up to zero, which seems to follow the sum to 
+# zero constraints Dr. Sabin talked about previously.  This holds true
+# for the fake betas as well.
+
 # This section allows us to see what happens when we have the same betas
 # as the website
 y <- c(-30.5, 0, -56, 36.5, -31.75, -65.5, -38.25, 8.25, 40.5, -60.75)
@@ -64,7 +68,7 @@ final <- playerInt %*% desired
 lineups %*% desired
 
 # We can then determine the approximate error by taking the difference
-# between the predicted values and the differentials, square these
+# between the predicted values and the differentials, squaring these
 # differences, summing them up, and then dividing by the degrees of 
 # freedom
 difference <- differential - predicted
@@ -128,10 +132,75 @@ fakeDifPerPlayer <- matrix(fakeDifPerPlayer, ncol = 1)
 psFakeInt <- pseudoinverse(fakeInt)
 fakeBetas <- psFakeInt %*% fakeDifPerPlayer
 fakeBetas
+
+fakeDifPerPlayer2 <- matrix(fakeDifPerPlayer2, ncol = 1)
+psFakeInt2 <- pseudoinverse(fakeInt2)
+fakeBetas2 <- psFakeInt2 %*% fakeDifPerPlayer2
+fakeBetas2
 ```
 
 
 ```{r}
+# Ridge Regression section
+
+# Make sure the appropriate libraries are loaded
+library(tidyverse)
+library(broom)
+library(glmnet)
+
+#model <- lm(differential~lineups)
+lambdas <- 10^seq(3, -2, by = -.1)
+fit <- glmnet(lineups, differential, alpha = 0, lambda = lambdas)
+summary(fit)
+cv_fit <- cv.glmnet(lineups, differential, alpha = 0, lambda = lambdas)
+plot(cv_fit)
+opt_lambda <- cv_fit$lambda.min
+opt_lambda
+```
+
+```{r}
+# My attempt at ridge regression
+# ridge regression (alpha = 0)
+#set.seed(1111)
+lm.ridge <- glmnet(x = lineups, y = differential, alpha = 0)
+
+# use cross validation to pick the "best" lambda (based on MSE)
+lm.ridge.cv <- cv.glmnet(x = lineups, y = differential, 
+                          type.measure = "mse", alpha = 0)
+
+# lambda.min is the value of lambda that gives minimum mean cross-validated 
+# error
+lm.ridge.cv$lambda.min
+# lambda.1se gives the most regularized model such that error is within one 
+# standard error of the minimum
+#lm.ridge.cv$lambda.1se
+
+# The two values for lambda are the same, so it doesn't matter which one we use
+
+# coefficients (betas) using a specific lambda penalty value
+coef(lm.ridge.cv, s = "lambda.min") 
+#coef(lm.ridge.cv, s = "lambda.1se")
+```
 
 
+```{r}
+library(broom)
+library(ggplot2)
+rapm <- lmridge(formula = differential ~ lineups, data = lambda = seq(0, 20000, 200))
+r2 <- tidy(rapm)
+g <- glance(rapm2)
+ggplot(r2, aes(lambda, GCV)) + geom_line() + geom_vline(xintercept = g$lambdaGCV, col = "red", lty = 2)
+```
+
+
+```{r}
+# Creating Other Games
+
+# Randomizes the amount of stints per game
+# Randomizes the amount of points per team per stint
+# Randomizes the players on the court per stint
+# Randomize the number of possessions
+# Each row sums to zero, 1's are only in the first half, -1's are only in the second half, and the remaining numbers have to be 0
+df <- read.csv("C:/Users/Brad Hymas/Desktop/testdata.csv", header = TRUE)
+df
 ```
