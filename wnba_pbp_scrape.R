@@ -242,3 +242,25 @@ possession_data <- function(gameid, data){
 # 
 # X_small
 
+# Potential code to fix stuff
+url <- "https://www.basketball-reference.com/wnba/boxscores/pbp/201905250CON.html"
+
+table <- url %>% read_html() %>% html_table()
+table[[1]] <- table[[1]][-1,]
+table <- url %>% read_html() %>% html_table()
+colnames(table[[1]]) <- table[[1]][1,]
+table[[1]]
+colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
+possible_vals <- bref_pbp %>% filter(Time == paste0(pbp$clock_display_value[i], ".0"))
+possible_vals
+nrow(possible_vals)
+last_name <- str_extract(player_in, "[A-Za-z]+$")
+str_detect(possible_vals$Away, last_name)
+str_detect(possible_vals$Home, last_name)
+sub <- possible_vals$Home[str_detect(possible_vals$Home, last_name)]
+player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
+
+box_score
+str_detect(box_score$athlete_short_name, player)
+box_score$athlete_display_name[str_detect(box_score$athlete_short_name, player)]
+
