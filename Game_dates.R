@@ -52,6 +52,12 @@ game_info <- game_info %>% filter(Winner != "WIL") %>%
            game_day = as.Date(game_day, "%A, %B %d, %Y"),
            game_day = format(game_day, "%Y%m%d"))
 
+teams <- read.csv("team_abbreviations.csv")
+game_info <- game_info %>% 
+    inner_join(teams, by = c('away_abr' = 'espn')) %>% 
+    inner_join(teams, by = c('home_abr' = 'espn')) %>%
+    rename(bref_away = bref.x,
+           bref_home = bref.y)
 # test <- games %>% html_elements('h2') %>% html_text2()
 # test2 <- paste0(test, ", 2019")
 # as.Date(test2, "%A, %B %d, %Y")
