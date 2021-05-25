@@ -8,6 +8,7 @@
 # devtools::install_github(repo = "saiemgilani/wehoop")
 library(wehoop)
 library(tidyverse)
+library(rvest)
 
 # Read in the play by play data for the Dallas Wings vs. Atlanta Dream on May 24, 2019
 pbp <- espn_wnba_pbp("401104916")
@@ -249,7 +250,7 @@ table <- url %>% read_html() %>% html_table()
 table[[1]] <- table[[1]][-1,]
 table <- url %>% read_html() %>% html_table()
 colnames(table[[1]]) <- table[[1]][1,]
-table[[1]]
+bref_pbp <- table[[1]]
 colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
 possible_vals <- bref_pbp %>% filter(Time == paste0(pbp$clock_display_value[i], ".0"))
 possible_vals
