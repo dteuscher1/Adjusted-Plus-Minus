@@ -30,11 +30,11 @@ game_id = gsub("\\/wnba\\/game\\?gameId=","",game_id)
 info3 <- info2 %>% mutate(game_day = as.Date(game_day, "%A, %B %d, %Y"),
                           game_id = game_ids, 
                           away_abr = str_extract(matchup, "[A-Z]+$"),
-                          home_abr = str_extract(Var.2, "[A-Z]+$")) %>% 
+                          home_abr = str_extract(Var.2, "[A-Z]+$"), 
+                          away_team = str_extract(matchup, ".+?(?= [A-Z]+$)"),
+                          home_team = str_extract(Var.2, ".+?(?= [A-Z]+$)")) %>% 
     separate(result, into = c("Winner", "Loser"), sep = ",") %>%
     mutate(Winner = str_extract(Winner, "[A-Z]+"),
            Loser = str_extract(Loser, "[A-Z]+"))
 
-str_extract(info3$matchup, "")
 info3
-str_split(info3$matchup, "[A-Z]+$")
