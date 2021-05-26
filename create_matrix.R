@@ -49,19 +49,34 @@ pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401165892 & pbp_2019$game_play_n
 game_ids <- unique(pbp_2019$game_id)
 
 empty_data_frame <- data.frame(home_points = 0, away_points = 0 , point_diff = 0, Player = "First Row", game_id = "")
-# Games 4, 7, 11, 12, 18, 22, 25, 26, 28, 32
+# Games 11, 38, 82, 105, 115, 173, 204, 215, 216
+games_to_use <- 1:length(game_ids)
+remove <- c(7, 9, 11, 38, 71, 82, 105, 115, 173, 204, 215, 216)
+games_to_use <- game_ids[-remove]
 counter <- 0
-for(i in 1:4){
+for(i in 1:length(games_to_use)){
     counter <- counter + 1
-    game_id_string <- paste(game_ids[i])
-    pbp <- pbp_2019 %>% filter(game_id == game_ids[i])
+    game_id_string <- paste(games_to_use[i])
+    pbp <- pbp_2019 %>% filter(game_id == games_to_use[i])
     data <- possession_data(game_id_string, pbp) %>% bind_cols(game_id = game_id_string)
     empty_data_frame <- empty_data_frame %>% bind_rows(data)
 }
 
-length(unique(empty_data_frame$game_id))
-game_ids[18]
-401129933
+empty_data_frame <- empty_data_frame[-1,]
+empty_data_frame <- empty_data_frame %>% mutate(Player = factor(Player))
+X <- model.matrix(point_diff ~ -1 + Player, data = empty_data_frame)
+ids <- seq(10, nrow(X), by = 10)
+X_small <- matrix(0, nrow = nrow(X)/10, ncol = ncol(X))
+colnames(X_small) <- colnames(X)
+for(i in ids){
+    k <- i/10
+    for(j in 1:ncol(X)){
+        X_small[k, j] <- sum(X[(i-9):i, j]) 
+    }
+}
 
-game_ids[11]
-game_ids[4]
+
+points <- seq(1, nrow(empty_data_frame), by = 10)
+y <- empty_data_frame$point_diff[points]
+write_csv(data.frame(X_small), "matrix_2019.csv")
+
