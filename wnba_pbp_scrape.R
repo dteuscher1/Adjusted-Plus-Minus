@@ -12,7 +12,7 @@ library(rvest)
 source("Game_dates.R")
 
 # Read in the play by play data for the Dallas Wings vs. Atlanta Dream on May 24, 2019
-#pbp <- espn_wnba_pbp("401104916")
+#pbp <- espn_wnba_pbp("401104923")
 possession_data <- function(gameid, data){
   pbp <- data
   box_score <- wehoop::espn_wnba_player_box(game_id = gameid)
@@ -103,7 +103,7 @@ possession_data <- function(gameid, data){
   # Combine the lineup with the play by play data
   test <- pbp %>% bind_cols(LineupAway = LineupAway, LineupHome = LineupHome)
   # Select variables that are needed to pull out possession information
-  possession <- test %>% select(shooting_play, home_score, scoring_play, away_score,
+  possession <- test %>% dplyr::select(shooting_play, home_score, scoring_play, away_score,
                                 text, score_value, team_id, type_text, LineupAway,
                                 LineupHome, clock_display_value)
   
