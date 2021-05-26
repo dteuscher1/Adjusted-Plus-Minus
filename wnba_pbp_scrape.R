@@ -36,47 +36,48 @@ possession_data <- function(gameid, data){
       # Determine the player coming in and the player coming out of the game
       player_in <- str_trim(str_extract(pbp$text[i], "^(.*)(?=enters)"))
       player_out <- str_extract(pbp$text[i], "(?<=for )(.*)$")
-      
-      if(player_in == "" || player_out == ""){
-        game <- game_info %>% filter(game_id == gameid)
-        url <- paste0("https://www.basketball-reference.com/wnba/boxscores/pbp/", game$game_day, "0",game$bref_home, ".html")
-        table <- url %>% read_html() %>% html_table()
-        table[[1]] <- table[[1]][-1,]
-        table <- url %>% read_html() %>% html_table()
-        colnames(table[[1]]) <- table[[1]][1,]
-        bref_pbp <- table[[1]]
-        colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
-        possible_vals <- bref_pbp %>% filter(Time == paste0(pbp$clock_display_value[i], ".0"))
-        if(player_out == ""){
-          last_name <- str_extract(player_in, "[A-Za-z]+$")
-        } else {
-          last_name <- str_extract(player_out, "[A-Za-z]+$") 
-        }
-        if(sum(str_detect(possible_vals$Away, last_name)) == 1){
-          sub <- possible_vals$Away[str_detect(possible_vals$Away, last_name)]
-          player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
-          if(!identical(player, character(0)) && is.na(player)){
-            player <- ""
+      if(str_detect(LineupHome[i-1], player_out) | str_detect(LineupAway[i-1], player_out)){
+        if(player_in == "" || player_out == ""){
+          game <- game_info %>% filter(game_id == gameid)
+          url <- paste0("https://www.basketball-reference.com/wnba/boxscores/pbp/", game$game_day, "0",game$bref_home, ".html")
+          table <- url %>% read_html() %>% html_table()
+          table[[1]] <- table[[1]][-1,]
+          table <- url %>% read_html() %>% html_table()
+          colnames(table[[1]]) <- table[[1]][1,]
+          bref_pbp <- table[[1]]
+          colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
+          possible_vals <- bref_pbp %>% filter(Time == paste0(pbp$clock_display_value[i], ".0"))
+          if(player_out == ""){
+            last_name <- str_extract(player_in, "[A-Za-z]+$")
+          } else {
+            last_name <- str_extract(player_out, "[A-Za-z]+$") 
           }
-        } else {
-          sub <- possible_vals$Home[str_detect(possible_vals$Home, last_name)]
-          player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
-          if(!identical(player, character(0)) && is.na(player)){
+          if(sum(str_detect(possible_vals$Away, last_name)) == 1){
+            sub <- possible_vals$Away[str_detect(possible_vals$Away, last_name)]
+            player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
+            if(!identical(player, character(0)) && is.na(player)){
+              player <- ""
+            }
+          } else {
+            sub <- possible_vals$Home[str_detect(possible_vals$Home, last_name)]
+            player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
+            if(!identical(player, character(0)) && is.na(player)){
+              player <- ""
+            }
+          }
+          if(identical(player, character(0))){
             player <- ""
+            player_sub <- player
+          } else {
+            player_sub <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, player)]
+          }
+          if(player_in == ""){
+            player_in <- player_sub
+          } else{
+            player_out <- player_sub
           }
         }
-        if(identical(player, character(0))){
-          player <- ""
-          player_sub <- player
-        } else {
-          player_sub <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, player)]
-        }
-        if(player_in == ""){
-          player_in <- player_sub
-        } else{
-          player_out <- player_sub
-        }
-      }
+      }  
       # If the player going out is on the away team, substitute the player in on the 
       # away team. If they aren't on the away team, then sub them for the home team
       if(player_in != "" && player_out != ""){
