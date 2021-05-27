@@ -78,5 +78,7 @@ for(i in ids){
 
 points <- seq(1, nrow(empty_data_frame), by = 10)
 y <- empty_data_frame$point_diff[points]
-write_csv(data.frame(X_small), "matrix_2019.csv")
+point_diff_2019 <- data.frame(X_small, point_diff = y)
+write_csv(point_diff_2019, "point_diff_2019.csv")
 
+glimpse(point_diff_2019)
