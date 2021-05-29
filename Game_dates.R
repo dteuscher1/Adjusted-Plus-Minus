@@ -1,13 +1,21 @@
-library(XML)
-library(MASS)
-library(rvest)
+## David Teuscher
+## Last updated: 29.05.2021
+## This script creates a dataset that includes the winner and loser for each game, 
+## the game date and the ESPN game id as well as the abbreviations for both the home 
+# away teams for ESPN and Basketball reference
+###############################################################
+
+# Load packages
+library(rvest) # Used for webscraping; getting data from ESPN
+library(tidyverse) # Used to manipulate the data set
+
 
 game_info <-  data.frame(Winner=character(), Loser = character(), game_day = character(), game_id = character(),
                          away_abr = character(), home_abr = character(), away_team = character(), 
                          home_team = character())
 playoff_characters <- c("FIRST ROUND", "SECOND ROUND")
 days <- seq(as.Date('2019-05-24'),as.Date('2019-10-10'),by='week')
-for(i in seq_along(days)){
+for(i in seq_along(days[1])){
     date <- format(days[i],format="%Y%m%d")
     games <- read_html(paste0("http://www.espn.com/wnba/schedule/_/date/",date))
     game_days <- games %>% html_elements('h2') %>% html_text2()
@@ -58,6 +66,7 @@ game_info <- game_info %>%
     inner_join(teams, by = c('home_abr' = 'espn')) %>%
     rename(bref_away = bref.x,
            bref_home = bref.y)
+game_info
 # test <- games %>% html_elements('h2') %>% html_text2()
 # test2 <- paste0(test, ", 2019")
 # as.Date(test2, "%A, %B %d, %Y")
