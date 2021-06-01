@@ -12,10 +12,10 @@ library(rvest)
 game_info <- read.csv("game_info_2019.csv")
 
 # Read in the play by play data for the Dallas Wings vs. Atlanta Dream on May 24, 2019
-#pbp <- espn_wnba_pbp("401104950")
+pbp <- espn_wnba_pbp("401104950")
 possession_data <- function(gameid, data){
   pbp <- data
-  box_score <- wehoop::espn_wnba_player_box(game_id = gameid)
+  box_score <- wehoop::espn_wnba_player_box(game_id = "401104950")
   starters <- box_score %>% filter(starter == TRUE)
   
   # Create empty vectors for the lineups for both teams
@@ -33,76 +33,100 @@ possession_data <- function(gameid, data){
   for(i in 2:nrow(pbp)){
     # If the play is a substitution, change the lineup
     if(pbp$type_text[i] == "Substitution"){
+      filter_pbp <- pbp %>% filter(type_text == "Substitution", clock_display_value == clock_display_value[i])
+      if(nrow(filter_pbp) > 1){
+        player_in <- str_trim(str_extract(filter_pbp$text, "^(.*)(?=enters)"))
+        player_out <- str_extract(filter_pbp$text, "(?<=for )(.*)$")
+        
+      } else {
+        player_in <- str_trim(str_extract(pbp$text[i], "^(.*)(?=enters)"))
+        player_out <- str_extract(pbp$text[i], "(?<=for )(.*)$")
+        if(is.na(player_in)){
+          player_in <- ""
+        }
+        if(is.na(player_out)){
+          player_out <- ""
+        }
+      }
+      if(any(player_in == "") | any(player_out == "")){
+        game <- game_info %>% filter(game_id == "401104950")
+        url <- paste0("https://www.basketball-reference.com/wnba/boxscores/pbp/", game$game_day, "0",game$bref_home, ".html")
+        table <- url %>% read_html() %>% html_table()
+        table[[1]] <- table[[1]][-1,]
+        table <- url %>% read_html() %>% html_table()
+        colnames(table[[1]]) <- table[[1]][1,]
+        bref_pbp <- table[[1]]
+        colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
+        possible_vals <- bref_pbp %>% filter(Time == paste0(pbp$clock_display_value[i], ".0"))
+        subs <- possible_vals[str_detect(possible_vals$Home, "enters the game") | str_detect(possible_vals$Away, "enters the game"), ]
+        Awaysubs <- subs$Away[subs$Away != ""]
+        Homesubs <- subs$Home[subs$Home != ""]
+        player_subs <- length(Awaysubs)
+      }
+      if(all(player_in != "") | any(player_out != "")){ 
       # Determine the player coming in and the player coming out of the game
-      player_in <- str_trim(str_extract(pbp$text[i], "^(.*)(?=enters)"))
-      player_out <- str_extract(pbp$text[i], "(?<=for )(.*)$")
-      if(is.na(player_in)){
-        player_in <- ""
-      }
-      if(is.na(player_out)){
-        player_out <- ""
-      }
-      if(str_detect(LineupHome[i-1], player_out) | str_detect(LineupAway[i-1], player_out)){
-        if(player_in == "" || player_out == ""){
-          game <- game_info %>% filter(game_id == gameid)
-          url <- paste0("https://www.basketball-reference.com/wnba/boxscores/pbp/", game$game_day, "0",game$bref_home, ".html")
-          table <- url %>% read_html() %>% html_table()
-          table[[1]] <- table[[1]][-1,]
-          table <- url %>% read_html() %>% html_table()
-          colnames(table[[1]]) <- table[[1]][1,]
-          bref_pbp <- table[[1]]
-          colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
-          possible_vals <- bref_pbp %>% filter(Time == paste0(pbp$clock_display_value[i], ".0"))
-          if(player_out == ""){
-            first_inital <- str_extract(player_in, "^[A-Z]")
-            last_name <- str_extract(player_in, "[A-Za-z]+$")
-            player_name <- paste0(first_inital, ". ", last_name)
-          } else {
-            first_inital <- str_extract(player_out, "^[A-Z]")
-            last_name <- str_extract(player_out, "[A-Za-z]+$") 
-            player_name <- paste0(first_inital, ". ", last_name)
-          }
-          if(sum(str_detect(possible_vals$Away, player_name)) == 1){
-            sub <- possible_vals$Away[str_detect(possible_vals$Away, player_name)]
-            if(length(sub) > 1){
-              sub_play <- str_detect(sub, "enters the game")
-              sub <- sub[sub_play]
-            }
+        if(str_detect(LineupHome[i-1], player_out) | str_detect(LineupAway[i-1], player_out)){
+          if(player_in == "" || player_out == ""){
+            game <- game_info %>% filter(game_id == "401104950")
+            url <- paste0("https://www.basketball-reference.com/wnba/boxscores/pbp/", game$game_day, "0",game$bref_home, ".html")
+            table <- url %>% read_html() %>% html_table()
+            table[[1]] <- table[[1]][-1,]
+            table <- url %>% read_html() %>% html_table()
+            colnames(table[[1]]) <- table[[1]][1,]
+            bref_pbp <- table[[1]]
+            colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
+            possible_vals <- bref_pbp %>% filter(Time == paste0(pbp$clock_display_value[i], ".0"))
             if(player_out == ""){
-              player <- str_extract(sub, "(?<=for)(.*)$")
+              first_inital <- str_extract(player_in, "^[A-Z]")
+              last_name <- str_extract(player_in, "[A-Za-z]+$")
+              player_name <- paste0(first_inital, ". ", last_name)
             } else {
-              player <- str_extract(sub, "^(.*)(?= enters)")
+              first_inital <- str_extract(player_out, "^[A-Z]")
+              last_name <- str_extract(player_out, "[A-Za-z]+$") 
+              player_name <- paste0(first_inital, ". ", last_name)
             }
-            player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
-            if(!identical(player, character(0)) && is.na(player)){
-              player <- ""
-            }
-          } else {
-            sub <- possible_vals$Home[str_detect(possible_vals$Home, player_name)]
-            if(length(sub) > 1){
-              sub_play <- str_detect(sub, "enters the game")
-              sub <- sub[sub_play]
-            }
-            if(player_out == ""){
-              player <- str_extract(sub, "(?<=for)(.*)$")
+            if(sum(str_detect(possible_vals$Away, player_name)) == 1){
+              sub <- possible_vals$Away[str_detect(possible_vals$Away, player_name)]
+              if(length(sub) > 1){
+                sub_play <- str_detect(sub, "enters the game")
+                sub <- sub[sub_play]
+              }
+              if(player_out == ""){
+                player <- str_extract(sub, "(?<=for)(.*)$")
+              } else {
+                player <- str_extract(sub, "^(.*)(?= enters)")
+              }
+              player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
+              if(!identical(player, character(0)) && is.na(player)){
+                player <- ""
+              }
             } else {
-              player <- str_extract(sub, "^(.*)(?= enters)")
+              sub <- possible_vals$Home[str_detect(possible_vals$Home, player_name)]
+              if(length(sub) > 1){
+                sub_play <- str_detect(sub, "enters the game")
+                sub <- sub[sub_play]
+              }
+              if(player_out == ""){
+                player <- str_extract(sub, "(?<=for)(.*)$")
+              } else {
+                player <- str_extract(sub, "^(.*)(?= enters)")
+              }
+              player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
+              if(!identical(player, character(0)) && is.na(player)){
+                player <- ""
+              }
             }
-            player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
-            if(!identical(player, character(0)) && is.na(player)){
+            if(identical(player, character(0))){
               player <- ""
+              player_sub <- player
+            } else {
+              player_sub <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, player)]
             }
-          }
-          if(identical(player, character(0))){
-            player <- ""
-            player_sub <- player
-          } else {
-            player_sub <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, player)]
-          }
-          if(player_in == ""){
-            player_in <- player_sub
-          } else{
-            player_out <- player_sub
+            if(player_in == ""){
+              player_in <- player_sub
+            } else{
+              player_out <- player_sub
+            }
           }
         }
       }  
