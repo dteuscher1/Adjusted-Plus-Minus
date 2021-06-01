@@ -50,9 +50,7 @@ game_ids <- unique(pbp_2019$game_id)
 
 empty_data_frame <- data.frame(home_points = 0, away_points = 0 , point_diff = 0, Player = "First Row", game_id = "")
 # Games 11, 38, 82, 105, 115, 173, 204, 215, 216
-games_to_use <- 1:length(game_ids)
-remove <- c(7, 9, 11, 38, 71, 82, 105, 115, 173, 204, 215, 216)
-games_to_use <- game_ids[-remove]
+games_to_use <- game_ids[-c(38, 56, 115, 173, 204, 215, 216)]
 counter <- 0
 for(i in 1:length(games_to_use)){
     counter <- counter + 1
@@ -61,7 +59,7 @@ for(i in 1:length(games_to_use)){
     data <- possession_data(game_id_string, pbp) %>% bind_cols(game_id = game_id_string)
     empty_data_frame <- empty_data_frame %>% bind_rows(data)
 }
-
+head(empty_data_frame)
 empty_data_frame <- empty_data_frame[-1,]
 empty_data_frame <- empty_data_frame %>% mutate(Player = factor(Player))
 X <- model.matrix(point_diff ~ -1 + Player, data = empty_data_frame)
