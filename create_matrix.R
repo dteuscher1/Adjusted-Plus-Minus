@@ -35,6 +35,8 @@ pbp_2019$text[pbp_2019$game_id == 401104975 & pbp_2019$game_play_number == 52] <
 pbp_2019$text[pbp_2019$game_id == 401104983 & pbp_2019$game_play_number == 250] <- "Victoria Macaulay enters the game for Stefanie Dolson"
 pbp_2019$text[pbp_2019$game_id == 401104985 & pbp_2019$game_play_number == 303] <- "Kahleah Copper enters the game for Allie Quigley"
 pbp_2019$text[pbp_2019$game_id == 401104994 & pbp_2019$game_play_number == 60] <- "Myisha Hines-Allen enters the game for LaToya Sanders"
+pbp_2019$text[pbp_2019$game_id == 401105002 & pbp_2019$game_play_number == 37] <- "Teaira McCowan enters the game for Candice Dupree"
+pbp_2019$text[pbp_2019$game_id == 401105024 & pbp_2019$game_play_number == 193] <- "Sugar Rodgers enters the game for Jackie Young"
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104919 & pbp_2019$game_play_number == 276), ]
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104924 & pbp_2019$game_play_number == 111), ]
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104937 & pbp_2019$game_play_number == 109), ]
@@ -58,8 +60,26 @@ pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104934 & pbp_2019$game_play_n
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104973 & pbp_2019$game_play_number == 120), ]
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104985 & pbp_2019$game_play_number == 301), ]
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104994 & pbp_2019$game_play_number == 61), ]
-View(pbp_2019 %>% filter(game_id == 401104994) %>% dplyr::select(text, game_play_number))
-pbp <- pbp_2019 %>% filter(game_id == 401104994)
+pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401105002 & pbp_2019$game_play_number == 38), ]
+pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401105010 & pbp_2019$game_play_number == 180), ]
+pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401105024 & pbp_2019$game_play_number == 190), ]
+text_cols <- c('Odyssey Sims enters the game for Lexie Brown', "Stephanie Talbot enters the game for Napheesa Collier")
+clock_display_value_cols <- c("6:47", "6:47")
+shooting_play_cols <- c(FALSE, FALSE)
+score_value_cols <- c(0, 0)
+season_cols <- c(2019, 2019)
+home_score_cols <- c(15, 15)
+away_score_cols <- c(25, 25)
+scoring_play_cols <- c(FALSE, FALSE)
+game_id_cols <- c(401105001, 401105001)
+type_text_cols <- c("Substitution", "Substitution")
+
+pbp_2019 <- pbp_2019 %>% add_row(text = text_cols, clock_display_value = clock_display_value_cols, shooting_play = shooting_play_cols,
+                                score_value = score_value_cols, season = season_cols, home_score = home_score_cols,
+                                away_score = away_score_cols, scoring_play = scoring_play_cols, game_id = game_id_cols,
+                                type_text = type_text_cols, .after = which(pbp_2019$game_id == "401105001" & pbp_2019$game_play_number == 127))
+View(pbp_2019 %>% filter(game_id == 401105024) %>% dplyr::select(text, game_play_number, clock_display_value))
+#pbp <- pbp_2019 %>% filter(game_id == 401105010)
 game_ids <- unique(pbp_2019$game_id)
 
 empty_data_frame <- data.frame(home_points = 0, away_points = 0 , point_diff = 0, Player = "First Row", game_id = "")
@@ -67,8 +87,8 @@ empty_data_frame <- data.frame(home_points = 0, away_points = 0 , point_diff = 0
 #games_to_use <- game_ids[-c(38, 56, 115, 173, 204, 215, 216)]
 games_to_use <- game_ids
 counter <- 1
-# games 22*, 54*, 61*, 63*, 71*, 73*, 81*, 82*, 88, 89, 97, 111, 151, 156, 174, 185, 191, 204, 214, 215
-for(i in 73){
+# games 22*, 54*, 61*, 63*, 71*, 73*, 81*, 82*, 88*, 89*, 97*, 111*, 151, 156, 174, 185, 191, 204, 214, 215
+for(i in 151){
     counter <- counter + 1
     game_id_string <- paste(games_to_use[i])
     pbp <- pbp_2019 %>% filter(game_id == games_to_use[i])
