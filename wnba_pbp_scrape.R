@@ -12,10 +12,10 @@ library(rvest)
 game_info <- read.csv("game_info_2019.csv")
 
 # Read in the play by play data for the Dallas Wings vs. Atlanta Dream on May 24, 2019
-pbp <- espn_wnba_pbp("401104950")
+#pbp <- espn_wnba_pbp("401104930")
 possession_data <- function(gameid, data){
   pbp <- data
-  box_score <- wehoop::espn_wnba_player_box(game_id = "401104950")
+  box_score <- wehoop::espn_wnba_player_box(game_id = gameid)
   starters <- box_score %>% filter(starter == TRUE)
   
   # Create empty vectors for the lineups for both teams
@@ -33,23 +33,25 @@ possession_data <- function(gameid, data){
   for(i in 2:nrow(pbp)){
     # If the play is a substitution, change the lineup
     if(pbp$type_text[i] == "Substitution"){
-      filter_pbp <- pbp %>% filter(type_text == "Substitution", clock_display_value == clock_display_value[i])
-      if(nrow(filter_pbp) > 1){
-        player_in <- str_trim(str_extract(filter_pbp$text, "^(.*)(?=enters)"))
-        player_out <- str_extract(filter_pbp$text, "(?<=for )(.*)$")
-        
-      } else {
+      filter_pbp <- pbp %>% filter(type_text == "Substitution", clock_display_value == clock_display_value[i], period_display_value == period_display_value[i])
+      player_in <- str_trim(str_extract(filter_pbp$text, "^(.*)(?=enters)"))
+      player_out <- str_extract(filter_pbp$text, "(?<=for )(.*)$")
+      sub_counter <- nrow(filter_pbp)
+      if(all(!stringi::stri_isempty(player_in)) & all(!stringi::stri_isempty(player_out))){
         player_in <- str_trim(str_extract(pbp$text[i], "^(.*)(?=enters)"))
         player_out <- str_extract(pbp$text[i], "(?<=for )(.*)$")
+        players_out <- player_out
+        sub_counter <- 1
         if(is.na(player_in)){
           player_in <- ""
         }
         if(is.na(player_out)){
           player_out <- ""
         }
+        
       }
-      if(any(player_in == "") | any(player_out == "")){
-        game <- game_info %>% filter(game_id == "401104950")
+      if((any(player_in == "") | any(player_out == "")) & (length(player_in) > 1 | length(player_out) > 1)){
+        game <- game_info %>% filter(game_id == gameid)
         url <- paste0("https://www.basketball-reference.com/wnba/boxscores/pbp/", game$game_day, "0",game$bref_home, ".html")
         table <- url %>% read_html() %>% html_table()
         table[[1]] <- table[[1]][-1,]
@@ -57,17 +59,50 @@ possession_data <- function(gameid, data){
         colnames(table[[1]]) <- table[[1]][1,]
         bref_pbp <- table[[1]]
         colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
-        possible_vals <- bref_pbp %>% filter(Time == paste0(pbp$clock_display_value[i], ".0"))
+        possible_vals <- bref_pbp %>% filter(Time == ifelse(str_detect(pbp$clock_display_value[i], ":"), paste0(pbp$clock_display_value[i], ".0"), ifelse(nchar(str_extract(pbp$clock_display_value[i], "^(.*)(?=.)")) == 3, paste0("0:", str_extract(pbp$clock_display_value[i], "^(.*)(?=.)"), "0"), paste0("0:0", str_extract(pbp$clock_display_value[i], "^(.*)(?=.)"), "0"))))
         subs <- possible_vals[str_detect(possible_vals$Home, "enters the game") | str_detect(possible_vals$Away, "enters the game"), ]
         Awaysubs <- subs$Away[subs$Away != ""]
         Homesubs <- subs$Home[subs$Home != ""]
-        player_subs <- length(Awaysubs)
-      }
-      if(all(player_in != "") | any(player_out != "")){ 
+        LineupAway[i] <- LineupAway[i-1]
+        LineupHome[i] <- LineupHome[i-1]
+        players_out_away <- character(length(Awaysubs))
+        if(!identical(Awaysubs, character(0))){
+          players_out_away <- str_trim(str_extract(Awaysubs, "(?<=for)(.*)$"))
+          players_in_away <- str_trim(str_extract(Awaysubs, "^(.*)(?=enters)"))
+          for(s in 1:length(Awaysubs)){
+            players_in_away[s] <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, players_in_away[s])]
+            players_out_away[s] <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, players_out_away[s])]
+            if(str_detect(LineupAway[i], players_out_away[s])){
+              LineupAway[i] <- str_replace(LineupAway[i], players_out_away[s], players_in_away[s])
+              LineupHome[i] <- LineupHome[i]
+            } else{
+              LineupHome[i] <- str_replace(LineupHome[i], players_out_away[s], players_in_away[s])
+              LineupAway[i] <- LineupAway[i]
+            }
+          }
+        }
+        players_out_home <- character(length(Homesubs))
+        if(!identical(Homesubs, character(0))){
+          players_out_home <- str_trim(str_extract(Homesubs, "(?<=for)(.*)$"))
+          players_in_home <- str_trim(str_extract(Homesubs, "^(.*)(?=enters)"))
+         for(s in 1:length(Homesubs)){
+           players_in_home[s] <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, players_in_home[s])]
+           players_out_home[s] <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, players_out_home[s])]
+           if(str_detect(LineupAway[i], players_out_home[s])){
+             LineupAway[i] <- str_replace(LineupAway[i], players_out_home[s], players_in_home[s])
+             LineupHome[i] <- LineupHome[i]
+           } else{
+             LineupHome[i] <- str_replace(LineupHome[i], players_out_home[s], players_in_home[s])
+             LineupAway[i] <- LineupAway[i]
+           }
+         }
+        }
+        players_out <- c(players_out_away, players_out_home)  
+      } else {
       # Determine the player coming in and the player coming out of the game
         if(str_detect(LineupHome[i-1], player_out) | str_detect(LineupAway[i-1], player_out)){
           if(player_in == "" || player_out == ""){
-            game <- game_info %>% filter(game_id == "401104950")
+            game <- game_info %>% filter(game_id == gameid)
             url <- paste0("https://www.basketball-reference.com/wnba/boxscores/pbp/", game$game_day, "0",game$bref_home, ".html")
             table <- url %>% read_html() %>% html_table()
             table[[1]] <- table[[1]][-1,]
@@ -96,7 +131,6 @@ possession_data <- function(gameid, data){
               } else {
                 player <- str_extract(sub, "^(.*)(?= enters)")
               }
-              player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
               if(!identical(player, character(0)) && is.na(player)){
                 player <- ""
               }
@@ -124,26 +158,33 @@ possession_data <- function(gameid, data){
             }
             if(player_in == ""){
               player_in <- player_sub
+              players_out <- player_out
             } else{
               player_out <- player_sub
+              players_out <- player_sub
             }
           }
         }
-      }  
+      }
+      
+      if(any(str_detect(LineupAway[i-1], players_out)) | any(str_detect(LineupHome[i-1], players_out))){
       # If the player going out is on the away team, substitute the player in on the 
       # away team. If they aren't on the away team, then sub them for the home team
-      if(player_in != "" && player_out != ""){
-        if(str_detect(LineupAway[i -1], player_out)){
-          LineupAway[i] <- str_replace(LineupAway[i-1], player_out, player_in)
-          LineupHome[i] <- LineupHome[i-1]
-        } else{
-          LineupHome[i] <- str_replace(LineupHome[i-1], player_out, player_in)
-          LineupAway[i] <- LineupAway[i-1]
+        if(sub_counter == 1){
+          if(player_in != "" && player_out != ""){
+            if(str_detect(LineupAway[i -1], player_out)){
+              LineupAway[i] <- str_replace(LineupAway[i-1], player_out, player_in)
+              LineupHome[i] <- LineupHome[i-1]
+            } else{
+              LineupHome[i] <- str_replace(LineupHome[i-1], player_out, player_in)
+              LineupAway[i] <- LineupAway[i-1]
+            }
+          } else{
+            LineupAway[i] <- LineupAway[i-1]
+            LineupHome[i] <- LineupHome[i-1]
+          }  
         }
-      } else{
-        LineupAway[i] <- LineupAway[i-1]
-        LineupHome[i] <- LineupHome[i-1]
-      } 
+      }  
     }
     
     # If it isn't a substitution, keep the lineup the same as the previous play
@@ -155,6 +196,7 @@ possession_data <- function(gameid, data){
   
   # Combine the lineup with the play by play data
   test <- pbp %>% bind_cols(LineupAway = LineupAway, LineupHome = LineupHome)
+  #View(test %>% dplyr::select(text, LineupAway, LineupHome, clock_display_value))
   # Select variables that are needed to pull out possession information
   possession <- test %>% dplyr::select(shooting_play, home_score, scoring_play, away_score,
                                 text, score_value, team_id, type_text, LineupAway,
