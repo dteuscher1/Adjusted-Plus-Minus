@@ -1,0 +1,24 @@
+---
+title: "Rshiny"
+author: "Cecelia Fu"
+date: "2021/6/2"
+output: html_document
+---
+
+```{r}
+library(shiny)
+
+ui <- fluidPage("Hello World")
+
+server <- function(input, output){
+  selectInput(inputId = "player", label = "Choose a Player", 
+              choices = paste(data$players, "-", data$team)),
+  plotOutput("hist")
+  output$hist <- renderPlot()
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+
+
