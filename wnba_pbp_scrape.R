@@ -12,7 +12,8 @@ library(rvest)
 game_info <- read.csv("game_info_2019.csv")
 
 # Read in the play by play data for the Dallas Wings vs. Atlanta Dream on May 24, 2019
-#pbp <- espn_wnba_pbp("401104930")
+#pbp <- espn_wnba_pbp("401105001")
+#gameid <- "401105001"
 possession_data <- function(gameid, data){
   pbp <- data
   box_score <- wehoop::espn_wnba_player_box(game_id = gameid)
@@ -67,7 +68,7 @@ possession_data <- function(gameid, data){
         LineupHome[i] <- LineupHome[i-1]
         players_out_away <- character(length(Awaysubs))
         if(!identical(Awaysubs, character(0))){
-          players_out_away <- str_trim(str_extract(Awaysubs, "(?<=for)(.*)$"))
+          players_out_away <- str_trim(str_extract(Awaysubs, "(?<=for )(.*)$"))
           players_in_away <- str_trim(str_extract(Awaysubs, "^(.*)(?=enters)"))
           for(s in 1:length(Awaysubs)){
             players_in_away[s] <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, players_in_away[s])]
@@ -97,7 +98,7 @@ possession_data <- function(gameid, data){
            }
          }
         }
-        players_out <- c(players_out_away, players_out_home)  
+        players_out <- c(players_out_away, players_out_home) 
       } else {
       # Determine the player coming in and the player coming out of the game
         if(str_detect(LineupHome[i-1], player_out) | str_detect(LineupAway[i-1], player_out)){

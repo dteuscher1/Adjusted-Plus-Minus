@@ -29,6 +29,12 @@ pbp_2019$text[pbp_2019$game_id == 401165796 & pbp_2019$game_play_number == 104] 
 pbp_2019$text[pbp_2019$game_id == 401165888 & pbp_2019$game_play_number == 83] <- "Tianna Hawkins enters the game for Elena Delle Donne"
 pbp_2019$text[pbp_2019$game_id == 401165892 & pbp_2019$game_play_number == 204] <- "Candace Parker enters the game for Chiney Ogwumike"
 pbp_2019$text[pbp_2019$game_id == 401104923 & pbp_2019$game_play_number == 303] <- "Chiney Ogwumike enters the game for Nneka Ogwumike"
+pbp_2019$text[pbp_2019$game_id == 401104934 & pbp_2019$game_play_number == 171] <- "Alanna Smith enters the game for Leilani Mitchell"
+pbp_2019$text[pbp_2019$game_id == 401104973 & pbp_2019$game_play_number == 122] <- "Natasha Cloud enters the game for Aerial Powers"
+pbp_2019$text[pbp_2019$game_id == 401104975 & pbp_2019$game_play_number == 52] <- "Chiney Ogwumike enters the game for Candace Parker"
+pbp_2019$text[pbp_2019$game_id == 401104983 & pbp_2019$game_play_number == 250] <- "Victoria Macaulay enters the game for Stefanie Dolson"
+pbp_2019$text[pbp_2019$game_id == 401104985 & pbp_2019$game_play_number == 303] <- "Kahleah Copper enters the game for Allie Quigley"
+pbp_2019$text[pbp_2019$game_id == 401104994 & pbp_2019$game_play_number == 60] <- "Myisha Hines-Allen enters the game for LaToya Sanders"
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104919 & pbp_2019$game_play_number == 276), ]
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104924 & pbp_2019$game_play_number == 111), ]
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104937 & pbp_2019$game_play_number == 109), ]
@@ -48,15 +54,21 @@ pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401105100 & pbp_2019$game_play_n
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401165888 & pbp_2019$game_play_number == 84), ]
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401165892 & pbp_2019$game_play_number == 205), ]
 pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104923 & pbp_2019$game_play_number == 300), ]
+pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104934 & pbp_2019$game_play_number == 172), ]
+pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104973 & pbp_2019$game_play_number == 120), ]
+pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104985 & pbp_2019$game_play_number == 301), ]
+pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104994 & pbp_2019$game_play_number == 61), ]
+View(pbp_2019 %>% filter(game_id == 401104994) %>% dplyr::select(text, game_play_number))
+pbp <- pbp_2019 %>% filter(game_id == 401104994)
 game_ids <- unique(pbp_2019$game_id)
 
 empty_data_frame <- data.frame(home_points = 0, away_points = 0 , point_diff = 0, Player = "First Row", game_id = "")
 # Games 11, 38, 82, 105, 115, 173, 204, 215, 216
 #games_to_use <- game_ids[-c(38, 56, 115, 173, 204, 215, 216)]
 games_to_use <- game_ids
-counter <- 215
-# games 22, 54, 61, 63, 71, 73, 81, 82, 88, 89, 97, 111, 151, 156, 174, 185, 191, 204, 214, 215
-for(i in 216:length(game_ids)){
+counter <- 1
+# games 22*, 54*, 61*, 63*, 71*, 73*, 81*, 82*, 88, 89, 97, 111, 151, 156, 174, 185, 191, 204, 214, 215
+for(i in 73){
     counter <- counter + 1
     game_id_string <- paste(games_to_use[i])
     pbp <- pbp_2019 %>% filter(game_id == games_to_use[i])
