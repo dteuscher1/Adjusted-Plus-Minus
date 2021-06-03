@@ -12,8 +12,8 @@ library(rvest)
 game_info <- read.csv("game_info_2019.csv")
 
 # Read in the play by play data for the Dallas Wings vs. Atlanta Dream on May 24, 2019
-pbp <- espn_wnba_pbp("401105024")
-gameid <- "401105024"
+#pbp <- espn_wnba_pbp("401105028")
+#gameid <- "401105041"
 possession_data <- function(gameid, data){
   pbp <- data
   box_score <- wehoop::espn_wnba_player_box(game_id = gameid)
@@ -29,6 +29,12 @@ possession_data <- function(gameid, data){
   # Home team is the second 5 players
   LineupAway[1] <- paste(starters$athlete_display_name[1:5], collapse = ",")
   LineupHome[1] <- paste(starters$athlete_display_name[6:10], collapse = ",")
+  
+  if(str_detect(LineupHome[1], "Brittany Boyd-Jones")){
+    LineupHome[1] <- str_replace(LineupHome[1], "Brittany Boyd-Jones", "Brittany Boyd")
+  } else if(str_detect(LineupAway[1], "Brittany Boyd-Jones")){
+    LineupAway[1] <- str_replace(LineupAway[1], "Brittany Boyd-Jones", "Brittany Boyd")
+  }
   
   # Loop through every row on the play by play data 
   for(i in 2:nrow(pbp)){
@@ -73,6 +79,12 @@ possession_data <- function(gameid, data){
           for(s in 1:length(Awaysubs)){
             players_in_away[s] <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, players_in_away[s])]
             players_out_away[s] <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, players_out_away[s])]
+            if(str_detect(players_out_away[s], "Brittany Boyd-Jones")){
+              players_out_away[s] <- str_replace(players_out_away[s], "Brittany Boyd-Jones", "Brittany Boyd")
+            }
+            if(str_detect(players_in_away[s], "Brittany Boyd-Jones")){
+              players_in_away[s] <- str_replace(players_in_away[s], "Brittany Boyd-Jones", "Brittany Boyd")
+            }
             if(str_detect(LineupAway[i], players_out_away[s])){
               LineupAway[i] <- str_replace(LineupAway[i], players_out_away[s], players_in_away[s])
               LineupHome[i] <- LineupHome[i]
@@ -89,6 +101,12 @@ possession_data <- function(gameid, data){
          for(s in 1:length(Homesubs)){
            players_in_home[s] <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, players_in_home[s])]
            players_out_home[s] <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, players_out_home[s])]
+           if(str_detect(players_out_home[s], "Brittany Boyd-Jones")){
+             players_out_home[s] <- str_replace(players_out_home[s], "Brittany Boyd-Jones", "Brittany Boyd")
+           }
+           if(str_detect(players_in_home[s], "Brittany Boyd-Jones")){
+             players_in_home[s] <- str_replace(players_out_home[s], "Brittany Boyd-Jones", "Brittany Boyd")
+           }
            if(str_detect(LineupAway[i], players_out_home[s])){
              LineupAway[i] <- str_replace(LineupAway[i], players_out_home[s], players_in_home[s])
              LineupHome[i] <- LineupHome[i]
@@ -156,6 +174,9 @@ possession_data <- function(gameid, data){
               player_sub <- player
             } else {
               player_sub <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, player)]
+              if(str_detect(player_sub, "Brittany Boyd-Jones")){
+                player_sub <- str_replace(player_sub, "Brittany Boyd-Jones", "Brittany Boyd")
+              } 
             }
             if(player_in == ""){
               player_in <- player_sub
@@ -197,7 +218,7 @@ possession_data <- function(gameid, data){
   
   # Combine the lineup with the play by play data
   test <- pbp %>% bind_cols(LineupAway = LineupAway, LineupHome = LineupHome)
-  View(test %>% dplyr::select(text, LineupAway, LineupHome, clock_display_value))
+  #View(test %>% dplyr::select(text, LineupAway, LineupHome, clock_display_value))
   # Select variables that are needed to pull out possession information
   possession <- test %>% dplyr::select(shooting_play, home_score, scoring_play, away_score,
                                 text, score_value, team_id, type_text, LineupAway,
@@ -242,6 +263,11 @@ possession_data <- function(gameid, data){
   away_points <- numeric(length(point_diff))
   LineupAway[1] <- paste(box_score$athlete_display_name[1:5], collapse = ",")
   LineupHome[1] <- paste(box_score$athlete_display_name[6:10], collapse = ",")
+  if(str_detect(LineupHome[1], "Brittany Boyd-Jones")){
+    LineupHome[1] <- str_replace(LineupHome[1], "Brittany Boyd-Jones", "Brittany Boyd")
+  } else if(str_detect(LineupAway[1], "Brittany Boyd-Jones")){
+    LineupAway[1] <- str_replace(LineupAway[1], "Brittany Boyd-Jones", "Brittany Boyd")
+  }
   home_points[1] <- 0
   away_points[1] <- 0
   k <- 2
