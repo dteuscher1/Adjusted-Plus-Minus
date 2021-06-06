@@ -1,5 +1,5 @@
 ## David Teuscher
-## Latest changes: 19.05.2021
+## Latest changes: 05.06.2021
 ## This script reads in play by play data for WNBA games and determines that 
 ## players on the court at the time
 ########################################################
@@ -12,8 +12,8 @@ library(rvest)
 game_info <- read.csv("game_info_2019.csv")
 
 # Read in the play by play data for the Dallas Wings vs. Atlanta Dream on May 24, 2019
-#pbp <- espn_wnba_pbp("401105028")
-#gameid <- "401105041"
+#pbp <- espn_wnba_pbp("401104913")
+#gameid <- "401104913"
 possession_data <- function(gameid, data){
   pbp <- data
   box_score <- wehoop::espn_wnba_player_box(game_id = gameid)
@@ -35,6 +35,11 @@ possession_data <- function(gameid, data){
   } else if(str_detect(LineupAway[1], "Brittany Boyd-Jones")){
     LineupAway[1] <- str_replace(LineupAway[1], "Brittany Boyd-Jones", "Brittany Boyd")
   }
+  if(str_detect(LineupHome[1], "Astou Ndour-Fall")){
+    LineupHome[1] <- str_replace(LineupHome[1], "Astou Ndour-Fall", "Astou Ndour")
+  } else if(str_detect(LineupAway[1], "Astou Ndour-Fall")){
+    LineupAway[1] <- str_replace(LineupAway[1], "Astou Ndour-Fall", "Astou Ndour")
+  }
   
   # Loop through every row on the play by play data 
   for(i in 2:nrow(pbp)){
@@ -43,10 +48,16 @@ possession_data <- function(gameid, data){
       filter_pbp <- pbp %>% filter(type_text == "Substitution", clock_display_value == clock_display_value[i], period_display_value == period_display_value[i])
       player_in <- str_trim(str_extract(filter_pbp$text, "^(.*)(?=enters)"))
       player_out <- str_extract(filter_pbp$text, "(?<=for )(.*)$")
+      
       sub_counter <- nrow(filter_pbp)
       if(all(!stringi::stri_isempty(player_in)) & all(!stringi::stri_isempty(player_out))){
         player_in <- str_trim(str_extract(pbp$text[i], "^(.*)(?=enters)"))
         player_out <- str_extract(pbp$text[i], "(?<=for )(.*)$")
+        if(str_detect(player_in, "Natisha Hiedeman")){
+          player_in <- "Natasha Hiedeman"
+        } else if(str_detect(player_out, "Natisha Hiedeman")){
+          player_out <- "Natasha Hiedeman"
+        }
         players_out <- player_out
         sub_counter <- 1
         if(is.na(player_in)){
@@ -85,6 +96,19 @@ possession_data <- function(gameid, data){
             if(str_detect(players_in_away[s], "Brittany Boyd-Jones")){
               players_in_away[s] <- str_replace(players_in_away[s], "Brittany Boyd-Jones", "Brittany Boyd")
             }
+            if(str_detect(players_out_away[s], "Astou Ndour-Fall")){
+              players_out_away[s] <- str_replace(players_out_away[s], "Astou Ndour-Fall", "Astou Ndour")
+            }
+            if(str_detect(players_in_away[s], "Astou Ndour-Fall")){
+              players_in_away[s] <- str_replace(players_in_away[s], "Astou Ndour-Fall", "Astou Ndour")
+            }
+            if(str_detect(players_out_away[s], "Natisha Hiedeman")){
+              players_out_away[s] <- str_replace(players_out_away[s], "Natisha Hiedeman", "Natasha Hiedeman")
+            }
+            if(str_detect(players_in_away[s], "Natisha Hiedeman")){
+              players_in_away[s] <- str_replace(players_in_away[s], "Natisha Hiedeman", "Natasha Hiedeman")
+            }
+            
             if(str_detect(LineupAway[i], players_out_away[s])){
               LineupAway[i] <- str_replace(LineupAway[i], players_out_away[s], players_in_away[s])
               LineupHome[i] <- LineupHome[i]
@@ -107,6 +131,19 @@ possession_data <- function(gameid, data){
            if(str_detect(players_in_home[s], "Brittany Boyd-Jones")){
              players_in_home[s] <- str_replace(players_out_home[s], "Brittany Boyd-Jones", "Brittany Boyd")
            }
+           if(str_detect(players_out_home[s], "Astou Ndour-Fall")){
+             players_out_home[s] <- str_replace(players_out_home[s], "Astou Ndour-Fall", "Astou Ndour")
+           }
+           if(str_detect(players_in_home[s], "Astou Ndour-Fall")){
+             players_in_home[s] <- str_replace(players_out_home[s], "Astou Ndour-Fall", "Astou Ndour")
+           }
+           if(str_detect(players_out_home[s], "Natisha Hiedeman")){
+             players_out_home[s] <- str_replace(players_out_home[s], "Natisha Hiedeman", "Natasha Hiedeman")
+           }
+           if(str_detect(players_in_home[s], "Natisha Hiedeman")){
+             players_in_home[s] <- str_replace(players_in_home[s], "Natisha Hiedeman", "Natasha Hiedeman")
+           }
+           
            if(str_detect(LineupAway[i], players_out_home[s])){
              LineupAway[i] <- str_replace(LineupAway[i], players_out_home[s], players_in_home[s])
              LineupHome[i] <- LineupHome[i]
@@ -176,7 +213,14 @@ possession_data <- function(gameid, data){
               player_sub <- box_score$athlete_display_name[str_detect(box_score$athlete_short_name, player)]
               if(str_detect(player_sub, "Brittany Boyd-Jones")){
                 player_sub <- str_replace(player_sub, "Brittany Boyd-Jones", "Brittany Boyd")
-              } 
+              }
+              if(str_detect(player_sub, "Astou Ndour-Fall")){
+                player_sub <- str_replace(player_sub, "Astou Ndour-Fall", "Astou Ndour")
+              }
+              if(str_detect(player_sub, "Natisha Hiedeman")){
+                player_sub <- str_replace(player_sub, "Natisha Hiedeman", "Natasha Hiedeman")
+              }
+              
             }
             if(player_in == ""){
               player_in <- player_sub
@@ -261,13 +305,19 @@ possession_data <- function(gameid, data){
   LineupHome <- numeric(length(point_diff))
   home_points <- numeric(length(point_diff))
   away_points <- numeric(length(point_diff))
-  LineupAway[1] <- paste(box_score$athlete_display_name[1:5], collapse = ",")
-  LineupHome[1] <- paste(box_score$athlete_display_name[6:10], collapse = ",")
+  LineupAway[1] <- paste(starters$athlete_display_name[1:5], collapse = ",")
+  LineupHome[1] <- paste(starters$athlete_display_name[6:10], collapse = ",")
   if(str_detect(LineupHome[1], "Brittany Boyd-Jones")){
     LineupHome[1] <- str_replace(LineupHome[1], "Brittany Boyd-Jones", "Brittany Boyd")
   } else if(str_detect(LineupAway[1], "Brittany Boyd-Jones")){
     LineupAway[1] <- str_replace(LineupAway[1], "Brittany Boyd-Jones", "Brittany Boyd")
   }
+  if(str_detect(LineupHome[1], "Astou Ndour-Fall")){
+    LineupHome[1] <- str_replace(LineupHome[1], "Astou Ndour-Fall", "Astou Ndour")
+  } else if(str_detect(LineupAway[1], "Astou Ndour-Fall")){
+    LineupAway[1] <- str_replace(LineupAway[1], "Astou Ndour-Fall", "Astou Ndour")
+  }
+  
   home_points[1] <- 0
   away_points[1] <- 0
   k <- 2
