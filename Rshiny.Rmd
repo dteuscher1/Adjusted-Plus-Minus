@@ -9,8 +9,10 @@ output: html_document
 library(tidyverse)
 players <- read.csv("Players_2019.csv")
 salaries <- read.csv("WNBA player salary 20192.csv")
-all_data <- players %>% inner_join(salaries, by = "Player")
+all_data <- players %>% inner_join(salaries, by = "Player") %>% 
+  mutate(Std_Salary = (Salary - mean(Salary, na.rm = TRUE))/sd(Salary, na.rm = TRUE))
 unique_teams <- unique(all_data$Tm)
+unique_stats <- names(all_data)
 head(all_data)
 ```
 
@@ -27,7 +29,7 @@ ui <- navbarPage("Player Value",
               actionButton('update2', 'Update')
             ),
             mainPanel(
-              plotOutput('wor')
+              tableOutput('player_info')
             )
           )
         ),         
@@ -45,11 +47,11 @@ ui <- navbarPage("Player Value",
         tabPanel("Statistic Correlation",
           sidebarLayout(
             sidebarPanel(
-              selectInput('team3', 'Choose a team', unique_teams, "ATL", selectize = TRUE),
+              selectInput('stat', 'Choose a stat', unique_stats, "G", selectize = TRUE),
               actionButton('update3', 'Update')
             ),
             mainPanel(
-              plotOutput('word')
+              plotOutput('lmplot')
             )
           )
         )
@@ -59,16 +61,28 @@ server <- function(input, output, session){
     rplot_words <- eventReactive(input$update1, {
       plot1 <- all_data %>%
       filter(Tm == paste(input$team)) %>%
-      ggplot(aes(WS, Salary)) +
+      ggplot(aes(FG., Std_Salary)) +
       geom_point(fill="#003058") +
-      xlab("Win Shares") +
+      xlab("Field Goal Percentage") +
       ylab("Salary") +
       theme_classic() +
       theme(axis.text.y = element_text(size = 16),
             axis.title = element_text(size = 16))
       plot1
   })
+   rplot_stats <- eventReactive(input$update3, {
+     plot2 <- all_data %>%
+       ggplot(aes_string(x = input$stat, y = 'WS')) + 
+       geom_point() + 
+       geom_smooth(method = "lm", se = FALSE) + 
+       xlab(paste(input$stat)) +
+       ylab("WS") + 
+       theme_classic()
+     plot2
+   })
  output$words <- renderPlot({rplot_words()})
+ output$lmplot <- renderPlot({rplot_stats()})
+ output$player_info <- renderTable(all_data)
 }
 
 shinyApp(ui = ui, server = server)

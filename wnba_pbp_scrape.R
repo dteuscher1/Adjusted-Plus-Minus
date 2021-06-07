@@ -1,22 +1,31 @@
 ## David Teuscher
-## Latest changes: 05.06.2021
-## This script reads in play by play data for WNBA games and determines that 
-## players on the court at the time
+## Latest changes: 07.06.2021
+## This script creates a function that takes the play by play data for 
+## a game and determines the players on the court and when possessions change
 ########################################################
 
 # Install the wehoop package
 # devtools::install_github(repo = "saiemgilani/wehoop")
+# Required packages
 library(wehoop)
 library(tidyverse)
 library(rvest)
+# Read in the game info file
 game_info <- read.csv("game_info_2019.csv")
 
-# Read in the play by play data for the Dallas Wings vs. Atlanta Dream on May 24, 2019
+# A single game game be examined using this code
 #pbp <- espn_wnba_pbp("401104913")
 #gameid <- "401104913"
+
+# Function to parse the play by play data into each possession
+# Inputs: Game id for the game from ESPN; If the game_info file is scraped correctly, the
+# game id can be extracted from there
+# Data: play by play data for the game associated with the game id
 possession_data <- function(gameid, data){
   pbp <- data
+  # Pull out the box score information to get full player names
   box_score <- wehoop::espn_wnba_player_box(game_id = gameid)
+  # Extract the starters from the box score data
   starters <- box_score %>% filter(starter == TRUE)
   
   # Create empty vectors for the lineups for both teams
@@ -30,6 +39,8 @@ possession_data <- function(gameid, data){
   LineupAway[1] <- paste(starters$athlete_display_name[1:5], collapse = ",")
   LineupHome[1] <- paste(starters$athlete_display_name[6:10], collapse = ",")
   
+  # A few players have the full name with a hyphen, but the play by play data only has
+  # their first name included, so this are changed to remove the hyphenated portion of the name
   if(str_detect(LineupHome[1], "Brittany Boyd-Jones")){
     LineupHome[1] <- str_replace(LineupHome[1], "Brittany Boyd-Jones", "Brittany Boyd")
   } else if(str_detect(LineupAway[1], "Brittany Boyd-Jones")){
@@ -45,21 +56,35 @@ possession_data <- function(gameid, data){
   for(i in 2:nrow(pbp)){
     # If the play is a substitution, change the lineup
     if(pbp$type_text[i] == "Substitution"){
+      # Determine how many substitutions occur at the time
       filter_pbp <- pbp %>% filter(type_text == "Substitution", clock_display_value == clock_display_value[i], period_display_value == period_display_value[i])
+      # Determine the number of players in and out
       player_in <- str_trim(str_extract(filter_pbp$text, "^(.*)(?=enters)"))
       player_out <- str_extract(filter_pbp$text, "(?<=for )(.*)$")
-      
+      # Set the number of substitutions to occur
       sub_counter <- nrow(filter_pbp)
+      
+      # If none of the substitutions have a missing player, then do all of the substitutions one
+      # by one
       if(all(!stringi::stri_isempty(player_in)) & all(!stringi::stri_isempty(player_out))){
+        # Extract the player in and the player out
         player_in <- str_trim(str_extract(pbp$text[i], "^(.*)(?=enters)"))
         player_out <- str_extract(pbp$text[i], "(?<=for )(.*)$")
+        
+        # There is occassionally a typo where Natasha is spelled Natisha, so 
+        # this corrects that if it occurs
         if(str_detect(player_in, "Natisha Hiedeman")){
           player_in <- "Natasha Hiedeman"
         } else if(str_detect(player_out, "Natisha Hiedeman")){
           player_out <- "Natasha Hiedeman"
         }
+        
+        # Set the substitute counter to 1
         players_out <- player_out
         sub_counter <- 1
+        
+        # If there is an NA value, it sets the player to a missing string 
+        # (This may be able to be removed based on other changes to the code)
         if(is.na(player_in)){
           player_in <- ""
         }
@@ -68,21 +93,33 @@ possession_data <- function(gameid, data){
         }
         
       }
+      # If any of the players are missing and there are more than one substitutions occurred at the time
+      # then go to Basketball Reference and pull out the substitution
       if((any(player_in == "") | any(player_out == "")) & (length(player_in) > 1 | length(player_out) > 1)){
+        # Filter the game info for the information about the specific game
         game <- game_info %>% filter(game_id == gameid)
+        # Create the needed url for basketball reference play by play data
         url <- paste0("https://www.basketball-reference.com/wnba/boxscores/pbp/", game$game_day, "0",game$bref_home, ".html")
+        
+        # Extract the play by play data from the url
         table <- url %>% read_html() %>% html_table()
         table[[1]] <- table[[1]][-1,]
         table <- url %>% read_html() %>% html_table()
         colnames(table[[1]]) <- table[[1]][1,]
         bref_pbp <- table[[1]]
+        # Rename the columns of the play by play data
         colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
+        # Filter the play by play data for plays that occurred at the time of the substitution
         possible_vals <- bref_pbp %>% filter(Time == ifelse(str_detect(pbp$clock_display_value[i], ":"), paste0(pbp$clock_display_value[i], ".0"), ifelse(nchar(str_extract(pbp$clock_display_value[i], "^(.*)(?=.)")) == 3, paste0("0:", str_extract(pbp$clock_display_value[i], "^(.*)(?=.)"), "0"), paste0("0:0", str_extract(pbp$clock_display_value[i], "^(.*)(?=.)"), "0"))))
+        # Take the plays at the time that are substitutions
         subs <- possible_vals[str_detect(possible_vals$Home, "enters the game") | str_detect(possible_vals$Away, "enters the game"), ]
+        # Extract the home and away substitutions
         Awaysubs <- subs$Away[subs$Away != ""]
         Homesubs <- subs$Home[subs$Home != ""]
         LineupAway[i] <- LineupAway[i-1]
         LineupHome[i] <- LineupHome[i-1]
+        
+        # Create an empty vector for the players going out 
         players_out_away <- character(length(Awaysubs))
         if(!identical(Awaysubs, character(0))){
           players_out_away <- str_trim(str_extract(Awaysubs, "(?<=for )(.*)$"))
@@ -461,27 +498,3 @@ possession_data <- function(gameid, data){
 # 
 # X_small
 
-# # Potential code to fix stuff
-# url <- "https://www.basketball-reference.com/wnba/boxscores/pbp/201905250CON.html"
-# 
-# table <- url %>% read_html() %>% html_table()
-# table[[1]] <- table[[1]][-1,]
-# table <- url %>% read_html() %>% html_table()
-# colnames(table[[1]]) <- table[[1]][1,]
-# bref_pbp <- table[[1]]
-# colnames(bref_pbp) <- c("Time", "Away", "Away_Points", "Score", "Home_Points", "Home")
-# possible_vals <- bref_pbp %>% filter(Time == paste0(pbp$clock_display_value[i], ".0"))
-# str_detect(possible_vals$Away, last_name)
-# last_name <- str_extract(player_in, "[A-Za-z]+$")
-# str_detect(possible_vals$Away, last_name)
-# str_detect(possible_vals$Home, last_name)
-# sub <- possible_vals$Home[str_detect(possible_vals$Home, last_name)]
-# player <- str_extract(sub, "[A-Z.]+ [A-Za-z]+$")
-# 
-# box_score
-# str_detect(box_score$athlete_short_name, player)
-# box_score$athlete_display_name[str_detect(box_score$athlete_short_name, player)]
-# 
-# test_url <- paste0("https://www.basketball-reference.com/wnba/boxscores/pbp/", game$game_day, "0",game$bref_home, ".html") 
-# table <- test_url %>% read_html() %>% html_table()
-# table
