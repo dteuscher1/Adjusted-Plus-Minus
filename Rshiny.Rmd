@@ -6,15 +6,69 @@ output: html_document
 ---
 
 ```{r}
+library(tidyverse)
+players <- read.csv("Players_2019.csv")
+salaries <- read.csv("WNBA player salary 20192.csv")
+all_data <- players %>% inner_join(salaries, by = "Player")
+unique_teams <- unique(all_data$Tm)
+head(all_data)
+```
+
+```{r}
 library(shiny)
+library(shinythemes)
 
-ui <- fluidPage("Hello World")
+ui <- navbarPage("Player Value",
+                 theme = shinythemes::shinytheme(theme= 'cosmo'),
+        tabPanel("Player Information",
+          sidebarLayout(
+            sidebarPanel(
+              selectInput('team2', 'Choose a team', unique_teams, "ATL", selectize = TRUE),
+              actionButton('update2', 'Update')
+            ),
+            mainPanel(
+              plotOutput('wor')
+            )
+          )
+        ),         
+        tabPanel("Salaries",
+          sidebarLayout(
+            sidebarPanel(
+              selectInput('team', 'Choose a team', unique_teams, "ATL", selectize = TRUE),
+              actionButton('update1', 'Update')
+            ),
+            mainPanel(
+              plotOutput('words')
+            )
+          )
+        ),
+        tabPanel("Statistic Correlation",
+          sidebarLayout(
+            sidebarPanel(
+              selectInput('team3', 'Choose a team', unique_teams, "ATL", selectize = TRUE),
+              actionButton('update3', 'Update')
+            ),
+            mainPanel(
+              plotOutput('word')
+            )
+          )
+        )
+)
 
-server <- function(input, output){
-  selectInput(inputId = "player", label = "Choose a Player", 
-              choices = paste(data$players, "-", data$team)),
-  plotOutput("hist")
-  output$hist <- renderPlot()
+server <- function(input, output, session){
+    rplot_words <- eventReactive(input$update1, {
+      plot1 <- all_data %>%
+      filter(Tm == paste(input$team)) %>%
+      ggplot(aes(WS, Salary)) +
+      geom_point(fill="#003058") +
+      xlab("Win Shares") +
+      ylab("Salary") +
+      theme_classic() +
+      theme(axis.text.y = element_text(size = 16),
+            axis.title = element_text(size = 16))
+      plot1
+  })
+ output$words <- renderPlot({rplot_words()})
 }
 
 shinyApp(ui = ui, server = server)
