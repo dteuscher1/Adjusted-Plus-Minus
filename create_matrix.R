@@ -45,8 +45,9 @@ for(i in ids){
 points <- seq(1, nrow(empty_data_frame), by = 10)
 y <- empty_data_frame$point_diff[points]
 home_possession <- empty_data_frame$home_possession[points]
+game_id <- empty_data_frame$game_id[points]
 
 # Create a data frame and save the data 
-point_diff_2019 <- data.frame(home_possession, X_small, point_diff = y)
+point_diff_2019 <- data.frame(game_id, home_possession, X_small, point_diff = y)
 write_csv(point_diff_2019, "point_diff_2019_updated.csv")
 
