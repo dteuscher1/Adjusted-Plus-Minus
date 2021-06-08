@@ -3,11 +3,17 @@
 ## This script creates a function that cleans and prepares the play by play 
 ## data for the 2019 WNBA season to be parsed
 ########################################################
+
+# Function that currently takes a year, but only returns cleaned data for 2019
 clean_data <- function(year){
     if(year == 2019){
-        pbp_2019 <- load_wnba_pbp(2019)
+        # Load all WNBA games from 2019
+        pbp_2019 <- load_wnba_pbp(year)
+        # Remove preseason games
         preseason <- 401129933:401129947
         pbp_2019 <- pbp_2019 %>% filter(!(game_id %in% preseason))
+        # Fix substitutions that occurred at the start of the quarter or where the time doesn't 
+        # match between ESPN and Basketball Reference
         pbp_2019$text[pbp_2019$game_id == 401104916 & pbp_2019$sequence_number == 424] <- "Bria Holmes enters the game for Shekinna Stricklen"
         pbp_2019$text[pbp_2019$game_id == 401104919 & pbp_2019$game_play_number == 275] <- "Shenise Johnson enters the game for Betnijah Laney"
         pbp_2019$text[pbp_2019$game_id == 401104924 & pbp_2019$game_play_number == 113] <- "Tina Charles enters the game for Nayo Raincock-Ekunwe"
@@ -78,6 +84,8 @@ clean_data <- function(year){
         pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401165809 & pbp_2019$game_play_number == 122), ]
         pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104981 & pbp_2019$game_play_number == 55), ]
         pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401105041 & pbp_2019$game_play_number == 58), ]
+        
+        # Insert two substitutions that occured that were not recorded in ESPN play by play data
         text_cols <- c('Odyssey Sims enters the game for Lexie Brown', "Stephanie Talbot enters the game for Napheesa Collier")
         clock_display_value_cols <- c("6:47", "6:47")
         shooting_play_cols <- c(FALSE, FALSE)
@@ -88,11 +96,11 @@ clean_data <- function(year){
         scoring_play_cols <- c(FALSE, FALSE)
         game_id_cols <- c(401105001, 401105001)
         type_text_cols <- c("Substitution", "Substitution")
-        
         pbp_2019 <- pbp_2019 %>% add_row(text = text_cols, clock_display_value = clock_display_value_cols, shooting_play = shooting_play_cols,
                                          score_value = score_value_cols, season = season_cols, home_score = home_score_cols,
                                          away_score = away_score_cols, scoring_play = scoring_play_cols, game_id = game_id_cols,
                                          type_text = type_text_cols, .after = which(pbp_2019$game_id == "401105001" & pbp_2019$game_play_number == 127))
     }
+    # Returns cleaned play by play data for 2019, ready to be parsed by possession
     return(pbp_2019)
 }
