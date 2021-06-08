@@ -1,5 +1,5 @@
 ## David Teuscher
-## Latest changes: 07.06.2021
+## Latest changes: 08.06.2021
 ## This script creates a function that takes the play by play data for 
 ## a game and determines the players on the court and when possessions change
 ########################################################
@@ -406,6 +406,7 @@ possession_data <- function(gameid, data){
   LineupHome <- numeric(length(point_diff))
   home_points <- numeric(length(point_diff))
   away_points <- numeric(length(point_diff))
+  home_possession <- numeric(length(point_diff))
   # Pull the starting lineups again
   LineupAway[1] <- paste(starters$athlete_display_name[1:5], collapse = ",")
   LineupHome[1] <- paste(starters$athlete_display_name[6:10], collapse = ",")
@@ -423,9 +424,13 @@ possession_data <- function(gameid, data){
   
   home_points[1] <- 0
   away_points[1] <- 0
+  # Determine who has possession at the beginning of the game
+  player_possession <- str_extract(possession$text[1], "(?<=\\()(.*)(?= gains)")
+  home_possession[1] <- ifelse(str_detect(LineupAway[1], player_possession), 0, 1)
   k <- 2
   # Filter through each row in the play by play data and when the possession changes
-  # calculate the point differential for that possession
+  # calculate the point differential for that possession; Also change which team has possession,
+  # each time the possession changes
   for(i in 1:nrow(possession)){
     if(possession$change_possession[i] == 1){
       home_points[k] <-  possession$home_score[i]
@@ -433,12 +438,13 @@ possession_data <- function(gameid, data){
       LineupAway[k] <- possession$LineupAway[i]
       LineupHome[k] <- possession$LineupHome[i]
       point_diff[k] <- (home_points[k] - home_points[k-1]) - (away_points[k] - away_points[k-1])
+      home_possession[k] <- ifelse(home_possession[k-1] == 1, 0, 1)
       k <- k + 1
     }
   }
   # Create a data frame with the points for both teams at each possession as well the point
   # differential for the possession and the lineups
-  another <- data.frame(home_points, away_points, point_diff, LineupAway, LineupHome)
+  another <- data.frame(home_points, away_points, point_diff, LineupAway, LineupHome, home_possession)
   # Reshaping from wide to long format to make it easy to create X matrix for modeling 
   test2 <- another %>% 
     separate(LineupAway, into = c("P1", "P2", "P3", "P4", "P5"), sep = ",") %>%

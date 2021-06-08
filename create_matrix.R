@@ -12,7 +12,7 @@ pbp_2019 <- clean_data(2019)
 game_ids <- unique(pbp_2019$game_id)
 
 # Create an empty data frame to hold data
-empty_data_frame <- data.frame(home_points = numeric(), away_points = numeric() , point_diff = numeric(), Player = character(), game_id = character())
+empty_data_frame <- data.frame(home_points = numeric(), away_points = numeric() , point_diff = numeric(), home_possession = numeric(), Player = character(), game_id = character())
 # Remove the All-star game
 games_to_use <- game_ids[c(-204)]
 
@@ -41,11 +41,12 @@ for(i in ids){
     }
 }
 
-# Extract the point differential for each possession
+# Extract the point differential and team possession for each possession
 points <- seq(1, nrow(empty_data_frame), by = 10)
 y <- empty_data_frame$point_diff[points]
+home_possession <- empty_data_frame$home_possession[points]
 
 # Create a data frame and save the data 
-point_diff_2019 <- data.frame(X_small, point_diff = y)
+point_diff_2019 <- data.frame(home_possession, X_small, point_diff = y)
 write_csv(point_diff_2019, "point_diff_2019_updated.csv")
 
