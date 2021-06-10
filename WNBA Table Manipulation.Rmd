@@ -1,0 +1,197 @@
+---
+title: "WNBA Table Manipulation"
+output: html_document
+---
+```{r}
+
+points <- read.csv("C://Users/Brad Hymas/Desktop/point_diff_2019_updated.csv", header = TRUE)
+library(tidyverse)
+y <- points$point_diff
+x <- points %>% dplyr::select(-point_diff) %>% as.matrix()
+library(MASS)
+ridge.model <- lm.ridge(y~x, lambda = 2000)
+model <- lm(y~x)
+ridge.coefs <- ridge.model$coef * 100
+coefs <- model$coef * 100
+#lm(y~-1 + -game_id, data = data)
+#coefs
+#ridge.coefs
+```
+
+```{r}
+# Per game stats
+
+player2019 <- read.csv("C://Users/Brad Hymas/Desktop/Players_2019.csv")
+player2019test <- player2019[,c(2, 4:6, 8:length(player2019))]
+
+# Defensive rebounds per player
+drb <- player2019test[1, 18] - player2019test[1, 17]
+for (i in 2:nrow(player2019test)) {
+  val <- player2019test[i, 18] - player2019test[i, 17]
+  drb <- c(drb, val)
+}
+
+# Minutes played per game
+mppg <- player2019test[1, 8] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 8] / player2019test[i, 6]
+    mppg <- c(mppg, val)
+}
+
+# Field goals made per game
+fgpg <- player2019test[1, 9] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 9] / player2019test[i, 6]
+    fgpg <- c(fgpg, val)
+}
+
+# Field goals attempted per game
+fgapg <- player2019test[1, 10] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 10] / player2019test[i, 6]
+    fgapg <- c(fgapg, val)
+}
+
+# Two-pointers made per game
+twoppg <- player2019test[1, 11] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 11] / player2019test[i, 6]
+    twoppg <- c(twoppg, val)
+}
+
+# Two-pointers attempted per game
+twopapg <- player2019test[1, 12] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 12] / player2019test[i, 6]
+    twopapg <- c(twopapg, val)
+}
+
+# Three-pointers made per game
+threeppg <- player2019test[1, 13] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 13] / player2019test[i, 6]
+    threeppg <- c(threeppg, val)
+}
+
+# Three-pointers attempted per game
+threepapg <- player2019test[1, 14] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 14] / player2019test[i, 6]
+    threepapg <- c(threepapg, val)
+}
+
+# Free throws made per game
+ftpg <- player2019test[1, 15] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 15] / player2019test[i, 6]
+    ftpg <- c(ftpg, val)
+}
+
+# Free throws attempted per game
+ftapg <- player2019test[1, 16] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 16] / player2019test[i, 6]
+    ftapg <- c(ftapg, val)
+}
+
+# Offensive rebounds per game
+orbpg <- player2019test[1, 17] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 17] / player2019test[i, 6]
+    orbpg <- c(orbpg, val)
+}
+
+# Defensive rebounds per game
+drbpg <- drb[1] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+  val <- drb[i] / player2019test[i, 6]
+  drbpg <- c(drbpg, val)
+}
+
+# Total rebounds per game
+trbpg <- player2019test[1, 18] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 18] / player2019test[i, 6]
+    trbpg <- c(trbpg, val)
+}
+
+# Assists per game
+apg <- player2019test[1, 19] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 19] / player2019test[i, 6]
+    apg <- c(apg, val)
+}
+
+# Steals per game
+spg <- player2019test[1, 20] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 20] / player2019test[i, 6]
+    spg <- c(spg, val)
+}
+
+# Blocks per game
+bpg <- player2019test[1, 21] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 21] / player2019test[i, 6]
+    bpg <- c(bpg, val)
+}
+
+# Turnovers per game
+tpg <- player2019test[1, 22] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 22] / player2019test[i, 6]
+    tpg <- c(tpg, val)
+}
+
+# Personal fouls per game
+pfpg <- player2019test[1, 23] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 23] / player2019test[i, 6]
+    pfpg <- c(pfpg, val)
+}
+
+# Points per game
+ppg <- player2019test[1, 24] / player2019test[1, 6]
+for (i in 2:nrow(player2019test)) {
+    val <- player2019test[i, 24] / player2019test[i, 6]
+    ppg <- c(ppg, val)
+}
+```
+
+```{r}
+
+# Adding data to columns
+
+player2019test['APG'] <- apg
+player2019test['BPG'] <- bpg
+player2019test['DRB'] <- drb
+player2019test['DRBPG'] <- drbpg
+player2019test['FGPG'] <- fgpg
+player2019test['FGAPG'] <- fgapg
+player2019test['FTPG'] <- ftpg
+player2019test['FTAPG'] <- ftapg
+player2019test['MPG'] <- mppg
+player2019test['ORBPG'] <- orbpg
+player2019test['PFPG'] <- pfpg
+player2019test['PPG'] <- ppg
+player2019test['SPG'] <- spg
+player2019test['X3PPG'] <- threeppg
+player2019test['X3PAPG'] <- threepapg
+player2019test['TPG'] <- tpg
+player2019test['TRBPG'] <- trbpg
+player2019test['X2PPG'] <- twoppg
+player2019test['X2PAPG'] <- twopapg
+
+# Reorganize the columns so the per game columns are next to the corresponding season totals
+
+player2019final <- player2019test[, c(1:8, 38, 9, 34, 10, 35, 11, 47, 12, 48, 13, 43, 14, 44, 15, 36, 16, 37, 32, 33, 17, 39, 18, 46,
+                                      19, 30, 20, 42, 21, 31, 22, 45, 23, 40, 24, 41, 25:29)]
+```
+
+```{r}
+
+# Add the coefficients from the base model and ridge regressed model to the table
+
+variable.names(coefs)
+
+```
