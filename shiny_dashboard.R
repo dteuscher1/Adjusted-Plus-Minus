@@ -1,8 +1,6 @@
 library(tidyverse)
-players <- read.csv("Players_2019.csv")
-salaries <- read.csv("WNBA player salary 20192.csv")
-all_data <- players %>% inner_join(salaries, by = "Player") %>% 
-    mutate(Std_Salary = (Salary - mean(Salary, na.rm = TRUE))/sd(Salary, na.rm = TRUE))
+library(plotly)
+all_data <- read.csv("shiny_data.csv")[,-1]
 unique_teams <- unique(all_data$Tm)
 unique_stats <- names(all_data)
 
@@ -28,7 +26,7 @@ ui <- dashboardPage(
                     fluidRow(
                         box(
                             selectInput('team2', 'Choose a team', unique_teams, "ATL", selectize = TRUE),
-                            selectizeInput('unique_stats', 'Stat Options',
+                            selectizeInput('all_stats', 'Stat Options',
                                            unique_stats, selected = "Player", multiple = TRUE),
                             actionButton('update2', 'Update')
                         ),
@@ -50,7 +48,9 @@ ui <- dashboardPage(
                                                selected = "ATL", inline = TRUE),
                             actionButton('update1', 'Update')
                         ),
-                            plotOutput('words')
+                        box(
+                            plotlyOutput('words')
+                        )
                     )
             ),
             
@@ -60,7 +60,7 @@ ui <- dashboardPage(
                             selectInput('stat', 'Choose a stat', unique_stats, "G", selectize = TRUE),
                             actionButton('update3', 'Update')
                         ),
-                        plotOutput('lmplot')
+                        plotlyOutput('lmplot')
                     )
             )
             
@@ -72,19 +72,20 @@ server <- function(input, output, session){
     rplot_words <- eventReactive(input$update1, {
         plot1 <- plot1 <- all_data %>%
             filter(Tm %in% input$team) %>%
-            ggplot(aes(FG., Std_Salary)) +
+            ggplot(aes(RAPM, Salary)) +
             geom_point(fill="#003058", aes(color = Tm)) +
             ggtitle("Salary scale") +
-            xlab("Field Goal Percentage") +
+            xlab("RAPM") +
             ylab("Salary") +
             theme_classic() +
             theme(axis.text.y = element_text(size = 16),
                   axis.title = element_text(size = 16))
-        plot1 + scale_color_brewer("Team", palette = "Set3")
+        plot1 <- plot1 + scale_color_brewer("Team", palette = "Set3")
+        plot1
     })
     rplot_stats <- eventReactive(input$update3, {
         plot2 <- all_data %>%
-            ggplot(aes_string(x = input$stat, y = 'WS')) + 
+            ggplot(aes_string(x = input$stat, y = 'RAPM')) + 
             geom_point() + 
             geom_smooth(method = "lm", se = FALSE) + 
             xlab(paste(input$stat)) +
@@ -94,13 +95,13 @@ server <- function(input, output, session){
     })
     rplot_selected <- eventReactive(input$update2, {
         displayTable <- all_data %>% filter(Tm == input$team2) %>%
-            select(input$unique_stats)
+            dplyr::select(input$all_stats)
     })
     output$selected <- renderTable({
         rplot_selected()})
     
-    output$lmplot <- renderPlot({rplot_stats()})
-    output$words <- renderPlot({rplot_words()})
+    output$lmplot <- renderPlotly({ggplotly(rplot_stats())})
+    output$words <- renderPlotly({ggplotly(rplot_words())})
     output$downloadData <- downloadHandler(
         filename = function() {
             paste("data-", input$team4, ".csv", sep="")

@@ -4,13 +4,13 @@ output: html_document
 ---
 ```{r}
 
-points <- read.csv("C://Users/Brad Hymas/Desktop/point_diff_2019_updated.csv", header = TRUE)
+points <- read.csv("point_diff_2019_updated.csv", header = TRUE)
 library(tidyverse)
 y <- points$point_diff
-x <- points %>% dplyr::select(-point_diff) %>% as.matrix()
+x <- points %>% dplyr::select(-point_diff, -game_id, -home_possession) %>% as.matrix()
 library(MASS)
-ridge.model <- lm.ridge(y~x, lambda = 2000)
-model <- lm(y~x)
+ridge.model <- lm.ridge(y~-1+x, lambda = 2000)
+model <- lm(y~-1+x)
 ridge.coefs <- ridge.model$coef * 100
 coefs <- model$coef * 100
 #lm(y~-1 + -game_id, data = data)
@@ -21,7 +21,7 @@ coefs <- model$coef * 100
 ```{r}
 # Per game stats
 
-player2019 <- read.csv("C://Users/Brad Hymas/Desktop/Players_2019.csv")
+player2019 <- read.csv("Players_2019.csv")
 player2019test <- player2019[,c(2, 4:6, 8:length(player2019))]
 
 # Defensive rebounds per player
@@ -192,6 +192,10 @@ player2019final <- player2019test[, c(1:8, 38, 9, 34, 10, 35, 11, 47, 12, 48, 13
 
 # Add the coefficients from the base model and ridge regressed model to the table
 
-variable.names(coefs)
 
+
+player_2019_info <- player2019final %>% arrange(Player) %>% mutate(APM = coefs, RAPM = ridge.coefs)
+salaries <- read.csv("WNBA player salary 20192.csv")
+players_2019 <- player_2019_info %>% left_join(salaries %>% dplyr::select(Player, Salary), by = "Player")
+write.csv(players_2019, 'shiny_data.csv')
 ```
