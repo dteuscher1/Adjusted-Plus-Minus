@@ -25,7 +25,7 @@ ui <- dashboardPage(
             tabItem(tabName = "player-info",
                     fluidRow(
                         box(
-                            selectInput('team2', 'Choose a team', unique_teams, "ATL", selectize = TRUE),
+                            selectizeInput('team2', 'Choose a team', unique_teams, "LVA", multiple = TRUE),
                             selectizeInput('all_stats', 'Stat Options',
                                            unique_stats, selected = "Player", multiple = TRUE),
                             actionButton('update2', 'Update')
