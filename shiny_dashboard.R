@@ -104,7 +104,7 @@ server <- function(input, output, session){
     output$words <- renderPlotly({ggplotly(rplot_words())})
     output$downloadData <- downloadHandler(
         filename = function() {
-            paste("data-", input$team4, ".csv", sep="")
+            paste("data-", input$team2, ".csv", sep="")
         },
         content = function(file) {
             write.csv({rplot_selected()}, file)
