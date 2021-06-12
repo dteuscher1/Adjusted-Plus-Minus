@@ -62,7 +62,9 @@ ui <- dashboardPage(
                             selectizeInput('team', 'Choose a team', unique_teams, "League", multiple = TRUE),
                             actionButton('update1', 'Update')
                         ),
-                        box(
+                    ),
+                    fluidRow(
+                        box(width = 10,
                             plotlyOutput('words')
                         )
                     )
@@ -96,13 +98,16 @@ ui <- dashboardPage(
 
 server <- function(input, output, session){
     rplot_words <- eventReactive(input$update1, {
-        colorCount <- length(unique(input$team))
-        getPalette <- colorRampPalette(brewer.pal(colorCount, "Dark2"))
-        if(input$team != "League"){
+        if(!("League" %in% input$team)){
             all_data <- per_36 %>%
                 filter(Team_Name %in% input$team)
         } else {
             all_data <- per_36
+        }
+        if(length(input_teams) <= 8 & !("League" %in% input$team)){
+            col_pal <- "Dark2"
+        } else {
+            col_pal <- "Set3"
         }
         plot1 <-  all_data %>%
             ggplot(aes(Salary, RAPM, text = paste0("Player: ", Player, "<br>", 
@@ -111,10 +116,9 @@ server <- function(input, output, session){
             geom_point(aes(color = Team_Name)) +
             xlab("Salary") +
             ylab("RAPM") +
-            scale_x_continuous(labels = scales::dollar_format()) +
-            scale_color_viridis_d() + 
+            scale_x_continuous(labels = scales::dollar_format()) + 
             theme_minimal()
-        plot1 <- plot1 + scale_color_brewer("Team", palette = "Set3")
+        plot1 <- plot1 + scale_color_brewer("Team", palette = col_pal)
         plot1
     })
     rplot_stats <- eventReactive(input$update3, {
