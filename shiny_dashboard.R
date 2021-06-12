@@ -1,14 +1,19 @@
 library(tidyverse)
 library(plotly)
-all_data <- read.csv("shiny_data.csv")[,-1]
-unique_teams <- unique(all_data$Tm)
-unique_stats <- names(all_data)
-
+per_36 <- read.csv("shiny_data_per_36.csv")[,-1] %>% filter(Tm != "TOT")
+per_minute <- read.csv("shiny_data_per_game.csv")[,-1] %>% filter(Tm != "TOT")
+teams <- read.csv("team_abbreviations.csv")
+per_36 <- per_36 %>% inner_join(teams, by = c('Tm' = "bref"))
+per_minute <- per_minute %>% inner_join(teams, by = c('Tm' = "bref"))
+unique_teams <- c(unique(per_minute$Team_Name), "League")
+unique_stats_36 <- names(per_36)
+unique_stats_game <- names(per_minute)
 library(shiny)
 library(shinythemes)
 library(shinydashboard)
 library(shinyjs)
 library(shiny)
+library(RColorBrewer)
 
 ui <- dashboardPage(
     dashboardHeader(title = "WNBA Player Value"),
@@ -24,17 +29,29 @@ ui <- dashboardPage(
             # First tab content
             tabItem(tabName = "player-info",
                     fluidRow(
-                        box(
-                            selectizeInput('team2', 'Choose a team', unique_teams, "LVA", multiple = TRUE),
-                            selectizeInput('all_stats', 'Stat Options',
-                                           unique_stats, selected = "Player", multiple = TRUE),
-                            actionButton('update2', 'Update')
-                        ),
-                        box(
-                            downloadButton("downloadData", "Download")
-                            ),
-                        
-                        tableOutput("selected"),
+                        box(width = 6,
+                            column(width = 6,
+                                   selectizeInput('team2', 'Choose a team', unique_teams, "League", multiple = TRUE),
+                                   selectizeInput("stat_type", "Type of Statistics", c("Per 36 minutes", "Per game")),
+                                   conditionalPanel(
+                                       condition = "input.stat_type == 'Per 36 minutes'",
+                                       selectizeInput('all_stats_minute', 'Stat Options',
+                                                      unique_stats_36, selected = "Player", multiple = TRUE)
+                                   ),
+                                   conditionalPanel(
+                                       condition = "input.stat_type == 'Per game'",
+                                       selectizeInput('all_stats_game', 'Stat Options',
+                                                      unique_stats_game, selected = "Player", multiple = TRUE)
+                                   ),
+                                   actionButton('update2', 'Update'),
+                                   downloadButton("downloadData", "Download")
+                            )
+                        )
+                    ),
+                    fluidRow(
+                        box(width = 12,
+                            DT::dataTableOutput("selected"),
+                        )
                     )
             ),
             
@@ -42,10 +59,7 @@ ui <- dashboardPage(
             tabItem(tabName = "Salaries",
                     fluidRow(
                         box(
-                            checkboxGroupInput(inputId = "team",
-                                               label = "Choose a team/teams",
-                                               unique_teams,
-                                               selected = "ATL", inline = TRUE),
+                            selectizeInput('team', 'Choose a team', unique_teams, "League", multiple = TRUE),
                             actionButton('update1', 'Update')
                         ),
                         box(
@@ -57,10 +71,22 @@ ui <- dashboardPage(
             tabItem(tabName = "stat-corr",
                     fluidRow(
                         box(
-                            selectInput('stat', 'Choose a stat', unique_stats, "G", selectize = TRUE),
+                            selectizeInput("stat_type", "Type of Statistics", c("Per 36 minutes", "Per game")),
+                            conditionalPanel(
+                                condition = "input.stat_type == 'Per 36 minutes'",
+                                selectizeInput('all_stats', 'Stat Options',
+                                               unique_stats_36, selected = "Player", multiple = TRUE)
+                            ),
+                            conditionalPanel(
+                                condition = "input.stat_type == 'Per game'",
+                                selectizeInput('all_stats', 'Stat Options',
+                                               unique_stats_game, selected = "Player", multiple = TRUE)
+                            ),
                             actionButton('update3', 'Update')
                         ),
-                        plotlyOutput('lmplot')
+                        box(
+                            plotlyOutput('lmplot')
+                        )    
                     )
             )
             
@@ -70,20 +96,34 @@ ui <- dashboardPage(
 
 server <- function(input, output, session){
     rplot_words <- eventReactive(input$update1, {
-        plot1 <- plot1 <- all_data %>%
-            filter(Tm %in% input$team) %>%
-            ggplot(aes(RAPM, Salary)) +
-            geom_point(fill="#003058", aes(color = Tm)) +
-            ggtitle("Salary scale") +
-            xlab("RAPM") +
-            ylab("Salary") +
-            theme_classic() +
-            theme(axis.text.y = element_text(size = 16),
-                  axis.title = element_text(size = 16))
+        colorCount <- length(unique(input$team))
+        getPalette <- colorRampPalette(brewer.pal(colorCount, "Dark2"))
+        if(input$team != "League"){
+            all_data <- per_36 %>%
+                filter(Team_Name %in% input$team)
+        } else {
+            all_data <- per_36
+        }
+        plot1 <-  all_data %>%
+            ggplot(aes(Salary, RAPM, text = paste0("Player: ", Player, "<br>", 
+                                                   "Salary: ", scales::dollar(Salary), "<br>",
+                                                   "RAPM: ", round(RAPM, digits = 3)))) +
+            geom_point(aes(color = Team_Name)) +
+            xlab("Salary") +
+            ylab("RAPM") +
+            scale_x_continuous(labels = scales::dollar_format()) +
+            scale_color_viridis_d() + 
+            theme_minimal()
         plot1 <- plot1 + scale_color_brewer("Team", palette = "Set3")
         plot1
     })
     rplot_stats <- eventReactive(input$update3, {
+        if(input$stat_type == "Per 36 minutes"){
+            all_data <- per_36
+        }
+        if(input$stat_type == "Per game"){
+            all_data <- per_minute
+        }
         plot2 <- all_data %>%
             ggplot(aes_string(x = input$stat, y = 'RAPM')) + 
             geom_point() + 
@@ -94,23 +134,37 @@ server <- function(input, output, session){
         plot2
     })
     rplot_selected <- eventReactive(input$update2, {
-        displayTable <- all_data %>% filter(Tm == input$team2) %>%
-            dplyr::select(input$all_stats)
+        if(input$stat_type == "Per 36 minutes"){
+            all_data <- per_36
+            variables <- input$all_stats_minute
+        }
+        if(input$stat_type == "Per game"){
+            all_data <- per_minute
+            variables <- input$all_stats_game
+        }
+        if(!("League" %in% input$team2)){
+            displayTable <- all_data %>% filter(Team_Name %in% input$team2) %>%
+                dplyr::select(all_of(variables))
+        } else {
+            displayTable <- all_data  %>%
+                dplyr::select(all_of(variables))
+        }
     })
-    output$selected <- renderTable({
-        rplot_selected()})
+    output$selected <- renderDataTable({
+        datatable(rplot_selected(), rownames = FALSE, options = list(scrollX='400px'))
+    })
     
     output$lmplot <- renderPlotly({ggplotly(rplot_stats())})
-    output$words <- renderPlotly({ggplotly(rplot_words())})
+    output$words <- renderPlotly({ggplotly(rplot_words(), tooltip = c("text"))})
     output$downloadData <- downloadHandler(
         filename = function() {
-            paste("data-", input$team2, ".csv", sep="")
+            paste("player_data.csv", sep="")
         },
         content = function(file) {
-            write.csv({rplot_selected()}, file)
+            write.csv({rplot_selected()}, file, row.names = FALSE)
         }
     )
-
+    
 }
 
 shinyApp(ui = ui, server = server)

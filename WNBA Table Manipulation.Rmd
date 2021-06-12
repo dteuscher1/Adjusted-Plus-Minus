@@ -226,45 +226,45 @@ pm <- (player2019test[,24] / player2019test[,8]) * 36
 
 # Adding per game data to columns 
 
-player2019test['APG'] <- apg
-player2019test['BPG'] <- bpg
-player2019test['DRB'] <- drb
-player2019test['DRBPG'] <- drbpg
-player2019test['FGPG'] <- fgpg
-player2019test['FGAPG'] <- fgapg
-player2019test['FTPG'] <- ftpg
-player2019test['FTAPG'] <- ftapg
-player2019test['MPG'] <- mppg
-player2019test['ORBPG'] <- orbpg
-player2019test['PFPG'] <- pfpg
-player2019test['PPG'] <- ppg
-player2019test['SPG'] <- spg
-player2019test['X3PPG'] <- threeppg
-player2019test['X3PAPG'] <- threepapg
-player2019test['TPG'] <- tpg
-player2019test['TRBPG'] <- trbpg
-player2019test['X2PPG'] <- twoppg
-player2019test['X2PAPG'] <- twopapg
+player2019test['APG'] <- round(apg, digits = 3)
+player2019test['BPG'] <- round(bpg, digits = 3)
+player2019test['DRB'] <- round(drb, digits = 3)
+player2019test['DRBPG'] <- round(drbpg, digits = 3)
+player2019test['FGPG'] <- round(fgpg, digits = 3)
+player2019test['FGAPG'] <- round(fgapg, digits = 3)
+player2019test['FTPG'] <- round(ftpg, digits = 3)
+player2019test['FTAPG'] <- round(ftapg, digits = 3)
+player2019test['MPG'] <- round(mppg, digits = 3)
+player2019test['ORBPG'] <- round(orbpg, digits = 3)
+player2019test['PFPG'] <- round(pfpg, digits = 3)
+player2019test['PPG'] <- round(ppg, digits = 3)
+player2019test['SPG'] <- round(spg, digits = 3)
+player2019test['X3PPG'] <- round(threeppg, digits = 3)
+player2019test['X3PAPG'] <- round(threepapg, digits = 3)
+player2019test['TPG'] <- round(tpg, digits = 3)
+player2019test['TRBPG'] <- round(trbpg, digits = 3)
+player2019test['X2PPG'] <- round(twoppg, digits = 3)
+player2019test['X2PAPG'] <- round(twopapg, digits = 3)
 
 # Adding per 36 minutes data to columns
 
-player2019test['FGPM'] <- fgm
-player2019test['FGAPM'] <- fgam
-player2019test['X2PPM'] <- twom
-player2019test['X2PAPM'] <- twoam
-player2019test['X3PPM'] <- threem
-player2019test['X3PAPM'] <- threeam
-player2019test['FTPM'] <- ftm
-player2019test['FTAPM'] <- ftam
-player2019test['ORBPM'] <- orbm
-player2019test['TRBPM'] <- trbm
-player2019test['DRBPM'] <- drbm
-player2019test['ASPM'] <- am
-player2019test['SPM'] <- sm
-player2019test['BPM'] <- bm
-player2019test['TPM'] <- tm
-player2019test['PFPM'] <- pfm
-player2019test['PPM'] <- pm
+player2019test['FGPM'] <- round(fgm, digits = 3)
+player2019test['FGAPM'] <- round(fgam, digits = 3)
+player2019test['X2PPM'] <- round(twom, digits = 3)
+player2019test['X2PAPM'] <- round(twoam, digits = 3)
+player2019test['X3PPM'] <- round(threem, digits = 3)
+player2019test['X3PAPM'] <- round(threeam, digits = 3)
+player2019test['FTPM'] <- round(ftm, digits = 3)
+player2019test['FTAPM'] <- round(ftam, digits = 3)
+player2019test['ORBPM'] <- round(orbm, digits = 3)
+player2019test['TRBPM'] <- round(trbm, digits = 3)
+player2019test['DRBPM'] <- round(drbm, digits = 3)
+player2019test['ASPM'] <- round(am, digits = 3)
+player2019test['SPM'] <- round(sm, digits = 3)
+player2019test['BPM'] <- round(bm, digits = 3)
+player2019test['TPM'] <- round(tm, digits = 3)
+player2019test['PFPM'] <- round(pfm, digits = 3)
+player2019test['PPM'] <- round(pm, digits = 3)
 
 # Reorganize the columns so the per game columns are next to the corresponding season totals
 
@@ -281,14 +281,14 @@ player2019pm <- player2019test[, c(1:9, 49, 10, 50, 11, 51, 12, 52, 13, 53, 14, 
 
 # Add the coefficients from the base model and ridge regressed model to the table for both tables
 
-player_2019_info_per_game <- player2019pg %>% arrange(Player) %>% mutate(APM = coefs, RAPM = ridge.coefs)
+player_2019_info_per_game <- player2019pg %>% arrange(Player) %>% mutate(APM = round(coefs, digits = 3), RAPM = round(ridge.coefs, digits = 3))
 salaries <- read.csv("WNBA player salary 20192.csv")
 players_2019_per_game <- player_2019_info_per_game %>% left_join(salaries %>% dplyr::select(Player, Salary), by = "Player")
-write.csv(players_2019_per_game, 'shiny_data.csv')
+write.csv(players_2019_per_game, 'shiny_data_per_game.csv')
 
-player_2019_info_per_minutes <- player2019pm %>% arrange(Player) %>% mutate(APM = coefs, RAPM = ridge.coefs)
+player_2019_info_per_minutes <- player2019pm %>% arrange(Player) %>% mutate(APM = round(coefs, digits = 3), RAPM = round(ridge.coefs, digits = 3))
 salaries <- read.csv("WNBA player salary 20192.csv")
 players_2019_per_minutes <- player_2019_info_per_minutes %>% left_join(salaries %>% dplyr::select(Player, Salary), by = "Player")
-write.csv(players_2019_per_minutes, 'shiny_data.csv')
+write.csv(players_2019_per_minutes, 'shiny_data_per_36.csv')
 
 ```
