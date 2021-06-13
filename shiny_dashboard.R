@@ -76,17 +76,21 @@ ui <- dashboardPage(
                             selectizeInput("stat_type", "Type of Statistics", c("Per 36 minutes", "Per game")),
                             conditionalPanel(
                                 condition = "input.stat_type == 'Per 36 minutes'",
-                                selectizeInput('all_stats', 'Stat Options',
-                                               unique_stats_36, selected = "Player", multiple = TRUE)
+                                selectizeInput('stat', 'Stat Options',
+                                               unique_stats_36, selected = "Player")
                             ),
                             conditionalPanel(
                                 condition = "input.stat_type == 'Per game'",
-                                selectizeInput('all_stats', 'Stat Options',
-                                               unique_stats_game, selected = "Player", multiple = TRUE)
+                                selectizeInput('stat', 'Stat Options',
+                                               unique_stats_game, selected = "Player")
                             ),
-                            actionButton('update3', 'Update')
+                            actionButton('update3', 'Update'),
                         ),
-                        box(
+                        infoBoxOutput("box1"),
+                        infoBoxOutput("box2")
+                    ),
+                    fluidRow(
+                        box(width = 9,
                             plotlyOutput('lmplot')
                         )    
                     )
@@ -131,10 +135,12 @@ server <- function(input, output, session){
         plot2 <- all_data %>%
             ggplot(aes_string(x = input$stat, y = 'RAPM')) + 
             geom_point() + 
-            geom_smooth(method = "lm", se = FALSE) + 
+            geom_smooth(method = "lm", se = FALSE, color = "blue3") + 
             xlab(paste(input$stat)) +
-            ylab("WS") + 
-            theme_classic()
+            ylab("RAPM") + 
+            labs(title = paste0("Linear Regression of RAPM vs ", input$stat)) + 
+            scale_color_hue(l = 45) +
+            theme_minimal()
         plot2
     })
     rplot_selected <- eventReactive(input$update2, {
@@ -154,6 +160,28 @@ server <- function(input, output, session){
                 dplyr::select(all_of(variables))
         }
     })
+    r2 <- eventReactive(input$update3, {
+        if(input$stat_type == "Per 36 minutes"){
+            all_data <- per_36
+        }
+        if(input$stat_type == "Per game"){
+            all_data <- per_minute
+        }
+        model_formula <- as.formula(paste0("RAPM ~ ", input$stat))
+        model <- lm(model_formula, data = all_data)
+        r2 <- summary(model)$r.squared
+        r2
+    })
+    cor_coef <- eventReactive(input$update3, {
+        if(input$stat_type == "Per 36 minutes"){
+            all_data <- per_36
+        }
+        if(input$stat_type == "Per game"){
+            all_data <- per_minute
+        }
+        corr_var <- cor(all_data[,"RAPM"], all_data[,paste(input$stat)])
+        corr_var
+    })
     output$selected <- renderDataTable({
         datatable(rplot_selected(), rownames = FALSE, options = list(scrollX='400px'))
     })
@@ -168,7 +196,30 @@ server <- function(input, output, session){
             write.csv({rplot_selected()}, file, row.names = FALSE)
         }
     )
-    
+    output$box1 <- renderInfoBox({
+        
+        req(input$stat)
+        
+        infoBox(
+            "R-squared", 
+            round(r2(), digits = 3),
+            icon = icon('basketball-ball'),
+            color = 'light-blue',
+            fill = TRUE
+        )
+    })
+    output$box2 <- renderInfoBox({
+        
+        req(input$stat)
+        
+        infoBox(
+            "Correlation Coefficient", 
+            round(cor_coef(), digits = 3),
+            icon = icon('basketball-ball'),
+            color = 'light-blue',
+            fill = TRUE
+        )
+    })
 }
 
 shinyApp(ui = ui, server = server)
