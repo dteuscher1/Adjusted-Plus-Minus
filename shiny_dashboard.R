@@ -26,7 +26,8 @@ ui <- dashboardPage(
             menuItem("Player Information", tabName = "player-info", icon = icon("dashboard")),
             menuItem("Salaries", tabName = "Salaries", icon = icon("dollar-sign")),
             menuItem("Statistic Relationships", tabName = "stat-corr", icon = icon("th")),
-            menuItem("Distribution", tabName = "stat-dist", icon = icon("chart-bar"))
+            menuItem("Distribution", tabName = "stat-dist", icon = icon("chart-bar")),
+            menuItem("Data Glossary", tabName = "glossary", icon = icon("book"))
         )
     ),
     dashboardBody(
@@ -130,8 +131,20 @@ ui <- dashboardPage(
                             plotOutput('stat_dist')
                         )    
                     )
-            )
-            
+            ),
+            tabItem(tabName = "glossary",
+                    fluidRow(
+                        column(1),
+                            box(
+                                title = p(icon('book'), 'Data Glossary'),
+                                width = 10,
+                                collapsible = TRUE,
+                                p(strong('Player:'), "First and last name of WNBA player"),
+                                p(strong('Season:'), "WNBA season"),
+                                p(strong('Age:'), "Player age at the beginning of a certain season")
+                            )
+                        )
+                    )
         )
     )
 )
@@ -156,6 +169,7 @@ server <- function(input, output, session){
             geom_point(aes(color = Team_Name)) +
             xlab("Salary") +
             ylab("RAPM") +
+            ggtitle(paste0("RAPM against Player Salary")) + 
             scale_x_continuous(labels = scales::dollar_format()) + 
             theme_minimal()
         plot1 <- plot1 + scale_color_brewer("Team", palette = col_pal)
@@ -239,6 +253,7 @@ server <- function(input, output, session){
                           size = 2) + 
             xlab(input$stat2) +
             ylab('Density') +
+            ggtitle(paste0("Histogram and Density Plot of ", input$stat2)) + 
             theme_minimal()
         plot
     })
