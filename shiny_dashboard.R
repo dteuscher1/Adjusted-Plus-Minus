@@ -8,6 +8,8 @@ per_minute <- per_minute %>% inner_join(teams, by = c('Tm' = "bref"))
 unique_teams <- c(unique(per_minute$Team_Name), "League")
 unique_stats_36 <- names(per_36)
 unique_stats_game <- names(per_minute)
+numeric_stats_36 <- per_36 %>% select_if(is.numeric) %>% names()
+numeric_stats_game <- per_minute %>% select_if(is.numeric) %>% names()
 library(shiny)
 library(shinythemes)
 library(shinydashboard)
@@ -15,6 +17,7 @@ library(shinyjs)
 library(shiny)
 library(RColorBrewer)
 library(DT)
+library(shinyWidgets)
 
 ui <- dashboardPage(
     dashboardHeader(title = "WNBA Player Value"),
@@ -22,7 +25,8 @@ ui <- dashboardPage(
         sidebarMenu(
             menuItem("Player Information", tabName = "player-info", icon = icon("dashboard")),
             menuItem("Salaries", tabName = "Salaries", icon = icon("dollar-sign")),
-            menuItem("Statistic Relationship", tabName = "stat-corr", icon = icon("th"))
+            menuItem("Statistic Relationships", tabName = "stat-corr", icon = icon("th")),
+            menuItem("Distribution", tabName = "stat-dist", icon = icon("chart-bar"))
         )
     ),
     dashboardBody(
@@ -78,12 +82,12 @@ ui <- dashboardPage(
                             conditionalPanel(
                                 condition = "input.stat_type == 'Per 36 minutes'",
                                 selectizeInput('stat', 'Stat Options',
-                                               unique_stats_36, selected = "Player")
+                                               numeric_stats_36, selected = "WS")
                             ),
                             conditionalPanel(
                                 condition = "input.stat_type == 'Per game'",
                                 selectizeInput('stat', 'Stat Options',
-                                               unique_stats_game, selected = "Player")
+                                               numeric_stats_game, selected = "WS")
                             ),
                             actionButton('update3', 'Update'),
                         ),
@@ -93,6 +97,37 @@ ui <- dashboardPage(
                     fluidRow(
                         box(width = 9,
                             plotlyOutput('lmplot')
+                        )    
+                    )
+            ),
+            tabItem(tabName = "stat-dist",
+                    fluidRow(
+                        box(
+                            selectizeInput("stat_type2", "Type of Statistics", c("Per 36 minutes", "Per game")),
+                            conditionalPanel(
+                                condition = "input.stat_type2 == 'Per 36 minutes'",
+                                selectizeInput('stat2', 'Stat Options',
+                                               numeric_stats_36, selected = "RAPM")
+                            ),
+                            conditionalPanel(
+                                condition = "input.stat_type2 == 'Per game'",
+                                selectizeInput('stat2', 'Stat Options',
+                                               numeric_stats_game, selected = "RAPM")
+                            ),
+                            sliderInput("nbins",
+                                        "Number of bins:",
+                                        min = 5,
+                                        max = 30,
+                                        value = 20), 
+                            actionButton('update4', 'Update'),
+                        ),
+                        infoBoxOutput("box3"),
+                        infoBoxOutput("box4"),
+                        infoBoxOutput("box5")
+                    ),
+                    fluidRow(
+                        box(width = 9,
+                            plotOutput('stat_dist')
                         )    
                     )
             )
@@ -183,6 +218,60 @@ server <- function(input, output, session){
         corr_var <- cor(all_data[,"RAPM"], all_data[,paste(input$stat)])
         corr_var
     })
+    rplot_dist <- eventReactive(input$update4, {
+        if(input$stat_type2 == "Per 36 minutes"){
+            all_data <- per_36 %>% select_if(is.numeric)
+        }
+        if(input$stat_type2 == "Per game"){
+            all_data <- per_minute %>% select_if(is.numeric)
+        }
+        plot <- ggplot(all_data, aes_string(x= input$stat2)) + 
+            geom_histogram(aes(y = ..density..), 
+                           color = 'black',
+                           bins = input$nbins,
+                           fill = '#a9daff') +
+            stat_function(fun = stats::dnorm,
+                          args = list(
+                              mean = mean(all_data %>%  dplyr::pull(input$stat2), na.rm = TRUE),
+                              sd = stats::sd(all_data %>%  dplyr::pull(input$stat2), na.rm = TRUE)
+                          ),
+                          col = '#317196',
+                          size = 2) + 
+            xlab(input$stat2) +
+            ylab('Density') +
+            theme_minimal()
+        plot
+    })
+    dist_mean <- eventReactive(input$update4, {
+        if(input$stat_type == "Per 36 minutes"){
+            all_data <- per_36 %>% select_if(is.numeric)
+        }
+        if(input$stat_type == "Per game"){
+            all_data <- per_minute %>% select_if(is.numeric)
+        }
+        mu <- mean(all_data[,paste(input$stat2)], na.rm = TRUE)
+        mu
+    })
+    dist_sd <- eventReactive(input$update4, {
+        if(input$stat_type == "Per 36 minutes"){
+            all_data <- per_36 %>% select_if(is.numeric)
+        }
+        if(input$stat_type == "Per game"){
+            all_data <- per_minute %>% select_if(is.numeric)
+        }
+        std <- sd(all_data[,paste(input$stat2)], na.rm = TRUE)
+        std
+    })
+    dist_median <- eventReactive(input$update4, {
+        if(input$stat_type == "Per 36 minutes"){
+            all_data <- per_36 %>% select_if(is.numeric)
+        }
+        if(input$stat_type == "Per game"){
+            all_data <- per_minute %>% select_if(is.numeric)
+        }
+        med <- median(all_data[,paste(input$stat2)], na.rm = TRUE)
+        med
+    })
     output$selected <- renderDataTable({
         datatable(rplot_selected(), rownames = FALSE, options = list(scrollX='400px'))
     })
@@ -221,6 +310,44 @@ server <- function(input, output, session){
             fill = TRUE
         )
     })
+    output$box3 <- renderInfoBox({
+        
+        req(input$stat2)
+        
+        infoBox(
+            "Mean", 
+            round(dist_mean(), digits = 3),
+            icon = icon('basketball-ball'),
+            color = 'light-blue',
+            fill = TRUE
+        )
+    })
+    output$box4 <- renderInfoBox({
+        
+        req(input$stat2)
+        
+        infoBox(
+            "Median", 
+            round(dist_median(), digits = 3),
+            icon = icon('basketball-ball'),
+            color = 'light-blue',
+            fill = TRUE
+        )
+    })
+    output$box5 <- renderInfoBox({
+        
+        req(input$stat2)
+        
+        infoBox(
+            "Standard Deviation", 
+            round(dist_sd(), digits = 3),
+            icon = icon('basketball-ball'),
+            color = 'light-blue',
+            fill = TRUE
+        )
+    })
+    output$stat_dist <- renderPlot(rplot_dist())
 }
+
 
 shinyApp(ui = ui, server = server)
