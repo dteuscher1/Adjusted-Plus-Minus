@@ -109,7 +109,7 @@ server <- function(input, output, session){
         } else {
             all_data <- per_36
         }
-        if(length(input_teams) <= 8 & !("League" %in% input$team)){
+        if(length(input$team) <= 8 & !("League" %in% input$team)){
             col_pal <- "Dark2"
         } else {
             col_pal <- "Set3"
