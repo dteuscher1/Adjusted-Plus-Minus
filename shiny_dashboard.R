@@ -14,6 +14,7 @@ library(shinydashboard)
 library(shinyjs)
 library(shiny)
 library(RColorBrewer)
+library(DT)
 
 ui <- dashboardPage(
     dashboardHeader(title = "WNBA Player Value"),
