@@ -1,0 +1,14 @@
+name: AdjustedPlusMinus
+title: AdjustedPlusMinus
+username:
+account: david-teuscher
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4272122
+bundleId: 4717086
+url: https://david-teuscher.shinyapps.io/AdjustedPlusMinus/
+when: 1623720184.31817
+lastSyncTime: 1623720184.31818
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Automatic APM.Rmd|clean_data.R|create_matrix.R|Game_dates.R|Game_Ids.R|game_info_2019.csv|matrix_2019.csv|Player Matrices.Rmd|Players_2019.csv|point_diff_2019_updated.csv|point_diff_2019.csv|README.md|Rshiny.Rmd|shiny_data.csv|WNBA player salary 2019.xltx|WNBA player salary 20192.csv|WNBA Table Manipulation.Rmd|wnba_pbp_scrape.py|wnba_pbp_scrape.R

@@ -3,34 +3,53 @@ title: "WNBA Table Manipulation"
 output: html_document
 ---
 ```{r}
+## David Teuscher and Brad Hymas
+## Last Edited: 14.06.2021
+## This script fits models for APM and RAPM and calculates per game and per 36 minute statistics
+## while preparing the data for use in a Shiny app
+##########################################
 
-# Read in the data and create a base and ridge regressed model
-
-points <- read.csv("point_diff_2019_updated.csv", header = TRUE)
+# Load needed packages
 library(tidyverse)
+library(MASS)
+
+# Change the year variable for different season assuming you have the player data and the matrix already created
+# This was the only way to automate it due to errors in the play by play data
+year <- 2019
+
+# Create the filename string with the year given by the user
+filename <- paste0("Data/point_diff_", year, "_updated.csv")
+points <- read.csv(filename, header = TRUE)
+
+# Set the y vector and X matrix
 y <- points$point_diff
 x <- points %>% dplyr::select(-point_diff, -game_id, -home_possession) %>% as.matrix()
-library(MASS)
+
+# Fit an APM (multiple linear regression ) and a RAPM model (ridge regression) and extract the coefficients
 ridge.model <- lm.ridge(y~-1+x, lambda = 2000)
 model <- lm(y~-1+x)
 ridge.coefs <- ridge.model$coef * 100
 coefs <- model$coef * 100
 
-# Variance of the coefficients
 
+# Determine the variance of the coefficients for both models
 lm_var <- diag(vcov(model))* 1000
 s2 <- 1/(nrow(x) - ncol(x)) * t(y - x %*% matrix(ridge.model$coef)) %*% (y - x %*% matrix(ridge.model$coef))
-ridge_var <- solve(t(x) %*% x + 2000* diag(ncol(x))) %*% t(x) %*% x %*% solve(t(x) %*% x + 2000 * diag(ncol(x)))
-as.vector(s2) * diag(ridge_var) * 1000
+ridge_var_part1 <- solve(t(x) %*% x + 2000* diag(ncol(x))) %*% t(x) %*% x %*% solve(t(x) %*% x + 2000 * diag(ncol(x)))
+ridge_var <- as.vector(s2) * diag(ridge_var_part1) * 1000
 
 ```
 
 ```{r}
 # Per game stats
-
-player2019 <- read.csv("Players_2019.csv")
+filename2 <- paste0("Data/Players_", year, ".csv")
+player2019 <- read.csv(filename2)
+# Remove columns that are not needed
 player2019test <- player2019[,c(2, 4:6, 8:length(player2019))]
 
+
+# The next section is adding in a lot of columns.
+# The code is not the most efficient, but we did not have time to come back and make it more efficient
 # Defensive rebounds per player
 drb <- player2019test[1, 18] - player2019test[1, 17]
 for (i in 2:nrow(player2019test)) {
@@ -166,7 +185,8 @@ for (i in 2:nrow(player2019test)) {
 ```
 
 ```{r}
-
+# This section adds variables based on the rate per 36 minutes played
+# Again the code isn't the most efficient, but there are plans to make it more efficient
 # Per 36 minutes stats
 
 # Defensive rebounds per 36 minutes
@@ -282,13 +302,20 @@ player2019pm <- player2019test[, c(1:9, 49, 10, 50, 11, 51, 12, 52, 13, 53, 14, 
 # Add the coefficients from the base model and ridge regressed model to the table for both tables
 
 player_2019_info_per_game <- player2019pg %>% arrange(Player) %>% mutate(APM = round(coefs, digits = 3), RAPM = round(ridge.coefs, digits = 3))
-salaries <- read.csv("WNBA player salary 20192.csv")
-players_2019_per_game <- player_2019_info_per_game %>% left_join(salaries %>% dplyr::select(Player, Salary), by = "Player")
-write.csv(players_2019_per_game, 'shiny_data_per_game.csv')
+# Read in the salary data
+filename3 <- paste0("Data/WNBA player salary ", year, "2.csv")
+salaries <- read.csv(filename3)
 
+# Join the salary to the player information with per game stats
+players_2019_per_game <- player_2019_info_per_game %>% left_join(salaries %>% dplyr::select(Player, Salary), by = "Player")
+# Write the file to a csv
+#write.csv(players_2019_per_game, 'Data/shiny_data_per_game.csv')
+
+# Join the salary to the player information with per 36 minutes stats
 player_2019_info_per_minutes <- player2019pm %>% arrange(Player) %>% mutate(APM = round(coefs, digits = 3), RAPM = round(ridge.coefs, digits = 3))
-salaries <- read.csv("WNBA player salary 20192.csv")
 players_2019_per_minutes <- player_2019_info_per_minutes %>% left_join(salaries %>% dplyr::select(Player, Salary), by = "Player")
-write.csv(players_2019_per_minutes, 'shiny_data_per_36.csv')
+
+# Write the file to a csv
+write.csv(players_2019_per_minutes, 'Data/shiny_data_per_36.csv')
 
 ```
