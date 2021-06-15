@@ -1,0 +1,55 @@
+---
+title: "IS 590R Graphs"
+output: html_document
+---
+
+```{r}
+
+# MSE vs Lambda
+
+library(broom)
+library(glmnet)
+lambdas <- 10^seq(4, -2, by = -.1)
+cv_fit <- cv.glmnet(x, y, alpha = 0, lambda = lambdas)
+plot(cv_fit)
+
+```
+
+```{r}
+# Scree Plot
+
+library(ggplot2)
+rapm2 <- lm.ridge(formula = point_diff~., data = points,
+                  lambda = seq(0, 5000, 200))
+r2 <- tidy(rapm2)
+g <- glance(rapm2)
+ggplot(r2, aes(lambda, GCV)) + geom_line() + geom_vline(xintercept = g$lambdaGCV, col = "red", lty = 2)
+
+```
+
+```{r}
+
+# Top Ten Players for Each Model
+
+indexA <- order(baseModelInfo, decreasing = TRUE)
+tempA <- baseModelInfo[indexA,]
+apmVars <- na.omit(tempA)
+view(head(apmVars, n = 10), title = "APM Top Ten Players")
+
+indexR <- order(ridgeModelInfo, decreasing = TRUE)
+tempR <- ridgeModelInfo[indexR,]
+rapmVars <- na.omit(tempR)
+view(head(rapmVars, n= 10), title = "RAPM Top Ten Players")
+
+```
+
+```{r}
+
+# Density Graphs for Each Model's Coefficients
+
+pR <- ggplot(ridgeModelInfo, aes(x = ridge.coefs)) + geom_density() + labs(x = 'RAPM Coefficients', y = 'Density')
+pR
+pA <- ggplot(baseModelInfo, aes(x = coefs)) + geom_density() + labs(x = 'APM Coefficients', y = 'Density')
+pA
+
+```
