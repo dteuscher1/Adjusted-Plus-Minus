@@ -23,13 +23,38 @@ rapm2 <- lm.ridge(formula = point_diff~., data = points,
                   lambda = seq(0, 5000, 200))
 r2 <- tidy(rapm2)
 g <- glance(rapm2)
-ggplot(r2, aes(lambda, GCV)) + geom_line() + geom_vline(xintercept = g$lambdaGCV, col = "red", lty = 2)
+ggplot(r2, aes(lambda, GCV)) + geom_line() + geom_vline(xintercept = g$lambdaGCV, col = "red", lty = 2) + theme_minimal()
 
 ```
 
 ```{r}
+y <- points$point_diff
+x <- points %>% dplyr::select(-point_diff, -game_id, -home_possession) %>% as.matrix()
 
+# Fit an APM (multiple linear regression ) and a RAPM model (ridge regression) and extract the coefficients
+ridge.model <- lm.ridge(y~-1+x, lambda = 2000)
+model <- lm(y~-1+x)
+ridge.coefs <- ridge.model$coef * 100
+coefs <- model$coef * 100
+
+
+# Determine the variance of the coefficients for both models
+lm_var <- diag(vcov(model))* 1000
+s2 <- 1/(nrow(x) - ncol(x)) * t(y - x %*% matrix(ridge.model$coef)) %*% (y - x %*% matrix(ridge.model$coef))
+ridge_var_part1 <- solve(t(x) %*% x + 2000* diag(ncol(x))) %*% t(x) %*% x %*% solve(t(x) %*% x + 2000 * diag(ncol(x)))
+ridge_var <- as.vector(s2) * diag(ridge_var_part1) * 1000
+
+baseModelInfo <- data.frame('APM Coefficients' = coefs, 'APM Coefficient Variance' = lm_var)
+ridgeModelInfo <- data.frame('RAPM Coefficients' = ridge.coefs, 'RAPM Coefficient Variance' = ridge_var)
+
+
+player2019 <- read.csv("../Data/Players_2019.csv")
+ModelInfo <- player2019 %>% bind_cols(APM_coef = coefs, APM_var = lm_var, RAPM_coef = ridge.coefs, RAPM_var = ridge_var)
+
+ModelInfo %>% arrange(desc(RAPM_coef)) %>% dplyr::select(Player, RAPM_coef, RAPM_var)
+ModelInfo %>% arrange(desc(APM_coef)) %>% dplyr::select(Player, APM_coef, APM_var)
 # Top Ten Players for Each Model
+
 
 indexA <- order(baseModelInfo, decreasing = TRUE)
 tempA <- baseModelInfo[indexA,]

@@ -17,7 +17,7 @@ nocite: |
 
 Hall of Fame NBA player and coach Phil Jackson once said, “The strength of the team is each individual member. The strength of each member is the team.”  Fans, coaches, and players alike would agree that successful basketball teams are the ones who have strong individual players who work well together as a team to win games.
 
-A player’s  “plus minus rating” is one of many basketball statistics that seeks to quantify the value of a player. Specifically, the plus minus rating was developed to identify a player’s contribution when they are on the court. Its calculation is simple; take the overall change in the score from when a player enters the game and when they exit the game, and this is their +/- rating.
+A player’s  plus minus rating is one of many basketball statistics that seeks to quantify the value of a player. Specifically, the plus minus rating was developed to identify a player’s contribution when they are on the court. Its calculation is simple; take the overall change in the score from when a player enters the game and when they exit the game, and this is their +/- rating.
 
 This rating is useful in that it is a way of measuring a player’s value to the team beyond simply how many points they score, how many baskets they assist, or how often they attempt free-throws. Instead, plus minus ratings can give an indication of a player’s value to a team. 
 
@@ -27,15 +27,15 @@ Adjusted plus minus is similar to plus-minus in that it uses the net change in s
 
 One of the reasons that we must use an adjusted plus minus is to see what players are valuable by themselves, and not just being carried by their team. Plus-minus ratings alone aren’t enough to tell us this; it’s possible that a player could have a high plus minus rating simply because they were on the court at the same time as players who were really good, or their rating could be high simply because they played for only a few minutes and those few minutes happened to be a good run for the team.
 
-Manu Ginobili is an example of a player who had a high plus-minus rating because of his team and not necessarily because of his extraordinary contribution on the court. Manu Ginobili has the fifth highest non adjusted plus-minus rating; better than Kobe Bryant, Shaquille O’Neal, or Steph Curry. Even though Manu Ginobili won four national championships, it would be difficult to argue that he is better than the league MVP’s. Manu Ginobili could be seen most games coming off the bench to support his team later in the game. He also played with 15-time all-star Tim Duncan, six-time all-star Tony Parker, and five-time all-star and two-time Defensive Player of the Year, Kawhi Leonard. It’s obvious that if Ginobili was on the floor with those people, he was likely to have a high plus-minus. His high rating, however, would be a result of the all stars he shared the court with.
+Manu Ginobili is an example of a player who had a high plus-minus rating because of his team and not necessarily because of his extraordinary contribution on the court. Manu Ginobili has the fifth highest non adjusted plus-minus rating; better than Kobe Bryant, Shaquille O’Neal, or Steph Curry. Even though Manu Ginobili won four national championships, it would be difficult to argue that he is better than the league MVPs. Manu Ginobili could be seen most games coming off the bench to support his team later in the game. He also played with 15-time all-star Tim Duncan, six-time all-star Tony Parker, and five-time all-star and two-time Defensive Player of the Year, Kawhi Leonard. It’s obvious that if Ginobili was on the floor with those people, he was likely to have a high plus-minus. His high rating, however, would be a result of the all stars he shared the court with.
 
-Ultimately by understanding the plus minus model coefficients for the WNBA, we can see what players are considered the best “team players” in the league. Having a better picture of a player’s overall value is helpful to consider when teams are making decisions such as player salary or team strategy. 
+Draymond Green is a prime example of how adjusted plus minus ratings can reveal the extraordinary contributions of players who are otherwise seen as average or comparatively unimportant to a team. Green, a player on the Golden State Warriors, had a game in which he only scored four points for his team against the Grizzlies in 2017. He also had ten assists, eleven rebounds, and ten steals. He finished the game with the highest adjusted plus-minus out of anyone in the game without scoring many points. This allows us to see that an adjusted plus-minus statistic shows us how useful a player truly is when they are on the court. It also shows how important other statistics are in a game besides points. https://www.basketball-reference.com/boxscores/201702100MEM.html
 
-Daymond Green is a prime example of how adjusted plus minus ratings can reveal the extraordinary contributions of players who are otherwise seen as average or comparatively unimportant to a team. Green, a player on the Golden State Warriors, had a game in which he only scored four points for his team against the Grizzlies in 2017. He also had ten assists, eleven rebounds, and ten steals. He finished the game with the highest adjusted plus-minus out of anyone in the game without scoring many points. This allows us to see that an adjusted plus-minus statistic shows us how useful a player truly is when they are on the court. It also shows how important other statistics are in a game besides points. https://www.basketball-reference.com/boxscores/201702100MEM.html
+The Lebron James vs. Michael Jordan debate is another area in which an adjusted plus/minus model could bring a lot of context. If you measure each player’s performance based simply on points per game, then Jordan is the winner with 30.1 compared to Lebron James’ 27.0. However, James has a lot more rebounds, assists, and is a better 3-point shooter, so there are a lot of things to consider in the definition of who is a better all around player. Michael Jordan finished his career with a Box Score Plus/Minus of 9.21, where Lebron James currently has a 8.89 BPM. It is easy to pick-and-choose statistics showing who is better that support your underlying belief, and in an argument over who actually provides the most value to their team as a whole in the game of basketball holistically, adjusted plus/minus becomes a very important metric. 
 
 A great analogy of a statistic like plus-minus being used in forming a teams strategy because of it’s holistic value to basketball is how baseball player’s statistics of how often they got on base (versus traditional statistics like their batting average) were used in the movie Moneyball, directed by Bennett Miller. In the movie, the statistician noticed that while the game of baseball itself is measured by the number of runs made throughout the game, a players value to his specific team could actually be even more effectively measured by the number of times they actually got on base, and this metric is what they focused on the most in their player selection. Their novel approach allowed them to recruit players that normally would have been overlooked based just on traditional metrics, and revolutionized recruiting in Major League Baseball.
 
-The Lebron James vs. Michael Jordan debate is another area in which an adjusted plus/minus model could bring a lot of context. If you measure each player’s performance based simply on points per game, then Jordan is the winner with 30.1 compared to Lebron James’ 27.0. However, James has a lot more rebounds, assists, and is a better 3-point shooter, so there are a lot of things to consider in the definition of who is a better all around player. Michael Jordan finished his career with a Box Score Plus/Minus of 9.21, where Lebron James currently has a 8.89 BPM. It is easy to pick-and-choose statistics showing who is better that support your underlying belief, and in an argument over who actually provides the most value to their team as a whole in the game of basketball holistically, adjusted plus/minus becomes a very important metric. 
+Ultimately by understanding the plus minus model coefficients for the WNBA, we can see what players are considered the best “team players” in the league. Having a better picture of a player’s overall value is helpful to consider when teams are making decisions such as player salary or team strategy. 
 
 # Previous Work 
 
@@ -56,20 +56,142 @@ Once the lineup for both teams was determined for every play, the play by play d
 
 # Model Specification and Justification
 
-Adjusted plus-minus models are fit using the framework of multiple linear regression. The adjusted plus-minus (APM) model was: (Insert model formula)
+Adjusted plus-minus models are fit using the framework of multiple linear regression. The adjusted plus-minus (APM) model was: 
+\begin{center}$\text{y}  =\textbf{X}\boldsymbol\beta + \boldsymbol\epsilon$\end{center}
+\begin{center}$\boldsymbol\epsilon \sim \mathcal{MVN}(\textbf{0}, \sigma^2\textbf{I})$\end{center} 
 
-where y_i is the point differential with respect to the home team score for the ith possession and X is a matrix that has a column for every WNBA player who played in 2019 as well as an indicator for whether the possession was for the home team or not and a row for every possession from the 2019 season. The players who were on the court for a possession are indicated by 1 in the respective column for the player. The beta coefficients are the estimate for player APM per possession. Since APM is often reported per 100 possessions, these coefficients were multiplied by 100
+where $y_i$ is the point differential with respect to the home team score for the ith possession and $\textbf{X}$ is a matrix that has a column for every WNBA player who played in 2019 as well as an indicator for whether the possession was for the home team or not and a row for every possession from the 2019 season. The players who were on the court for a possession are indicated by 1 in the respective column for the player. The $\beta$ coefficients are the estimate for player APM per possession. Since APM is often reported per 100 possessions, these coefficients were multiplied by 100
 
-The regularized adjusted plus-minus model (RAPM) was: (Insert model formula)
+The regularized adjusted plus-minus model (RAPM) was: 
 
-where y_i and X and beta are the same as the APM model, with an additional parameter, lambda, which is a shrinkage parameter that penalizes the ridge regression model based on the size of the estimated beta coefficients. 
+\begin{center}$\text{y}  =\textbf{X}\boldsymbol\beta + \boldsymbol\epsilon$\end{center}
+\begin{center}$\boldsymbol\epsilon \sim \mathcal{MVN}(\textbf{0}, \sigma^2\textbf{I})$\end{center} 
+$$L(\lambda,\beta) = |y-X\beta|^2 + \lambda * \sum_{p=1}^{P}(\beta_p^2)$$
+$$\hat{\beta}_{\text{ridge}} = \text{arg} \min_{\beta}\{ L(\lambda,\beta) \}$$
 
-Both of these models have assumptions that are essential if they are to be used to make inference about the data. For the APM, the essential assumptions are linearity of the data, independence between observations, and normality and homoscedasticity of the residuals. Linearity is somewhat of a superfluous assumption for this model because all of the variables are binary variables and added-variable plots of binary variables do not reveal much information. Since all of the explanatory variables are binary, it is assumed that the linearity assumption is met. There are some potential issues with the independence assumption. For this analysis, it is assumed that possessions are independent of each other, but there may be some arguments that possessions are not completely independent of each other. Although there may be viable arguments, it isn’t unreasonable to assume independence, thus the possessions are assumed to be independent. The figure below shows a histogram of the residuals and a fitted vs. residual values plot and both the normality and homoscedasticity assumptions appear to be met based on the plots below. (Insert plots here)
 
-Since all of these assumptions are met, the APM model can be fit. Even though the key assumptions for multiple linear regression is met, there is one other area of concern that leads one to believe that the APM model is not the best model for determining player fit. 
+where $y_i$ and $\textbf{X} and beta are the same as the APM model, with an additional parameter, lambda, which is a shrinkage parameter that penalizes the ridge regression model based on the size of the estimated beta coefficients. Ridge regression is similar to linear regression, but there is an additional penalty that is included. As the coefficients get the larger, the penalty increases, so the penalization shrinks the coefficients towards 0. In order to maximize the function with the additional penalty term, most coefficients will be a lot smaller than they will be for the APM model. 
 
+Both of these models have assumptions that are essential if they are to be used to make inference about the data. For the APM, the essential assumptions are linearity of the data, independence between observations, and normality and homoscedasticity of the residuals. Linearity is somewhat of a superfluous assumption for this model because all of the variables are binary variables and added-variable plots of binary variables do not reveal much information. Since all of the explanatory variables are binary, it is assumed that the linearity assumption is met. There are some potential issues with the independence assumption. For this analysis, it is assumed that possessions are independent of each other, but there may be some arguments that possessions are not completely independent of each other. Although there may be viable arguments, it isn’t unreasonable to assume independence, thus the possessions are assumed to be independent. The figure below shows a histogram of the residuals and a fitted vs. residual values plot and both the normality and homoscedasticity assumptions appear to be met based on the plots below, so these assumptions are valid and it seems reasonable to use multiple linear regression to model the data. 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, out.width='67%', fig.align='center'}
+library(tidyverse)
+library(patchwork)
+library(MASS)
+library(broom)
+points <- read.csv("Data/point_diff_2019_updated.csv", header = TRUE)
+
+# Set the y vector and X matrix
+y <- points$point_diff
+x <- points %>% dplyr::select(-point_diff, -game_id, -home_possession) %>% as.matrix()
+
+# Fit an APM (multiple linear regression ) and a RAPM model (ridge regression) and extract the coefficients
+ridge.model <- lm.ridge(y~-1+x, lambda = 2000)
+model <- lm(y~-1+x)
+
+stdresiduals <- stdres(model)
+
+plot1 <- ggplot(model, aes(x = stdresiduals)) + 
+  geom_histogram(mapping = aes(x = stdresiduals, y = ..density..), binwidth = 1, color = "black", fill = "white") +
+  stat_function(fun = dnorm, color = "red", lwd = 1) +
+  labs(x = 'Standardized Residuals', y = 'Count') + theme_minimal()
+
+#3. Check equal variance with fitted vs. residual plot and BP-test
+plot2 <- ggplot() + geom_point(aes(x = model$fitted.values, y = stdresiduals)) + 
+    geom_hline(yintercept = 0, col = "blue") + 
+    labs(x = "Fitted Values", y = "Standardized Residuals") + theme_minimal()
+plot1  + plot2
+```
+
+
+Since all of these assumptions are met, the APM model can be fit. Even though the key assumptions for multiple linear regression is met, there is one other area of concern that leads one to believe that the APM model is not the best model for determining player fit. Multicollineary is an issue that arises with the APM model because there are many players who play together with each other as a result of substitution patterns and scouting by teams. The multicollinearity makes it difficult to determine which player actually had a postive or negative affect on the team. Also players who played very few possessions have unstable and unreliable estimates from the APM model and the variance of these estimates are generally large. As a result of these issues, RAPM is used. As previously mentioned, ridge regression will shrink coefficients towards 0, which keeps players who didn't play a lot from having large coefficient estimates. The other benefit of ridge regression is that correlated players will get shrunk towards each other rather than removing one of the correlated variables, which is the result when using LASSO. MacDonald[@macdonald2012] also showed that single season estimates with ridge regression are stable enough to have value. 
+
+The only assumption needed for ridge regression is linearity and since all of the variance are binary indicator variables, it is assumed that this assumption is met and it is appropriate to use ridge regression for this analysis. An important part of the ridge regression model is tuning the shrinkage parameter, $\lambda$. The figure below shows that the generalized cross validation score continues to decrease as $\lambda$ increases. It is not reasonable to have $\lambda$ so high because it will shrink all of the coefficients towards 0 and there will be no useful results from the model. Joe Sill[@sill2010] found that a $\lambda$ of 2000 worked well when working with NBA data and that value has been used for this analysis. There could be additional work done to examine the effect of different $\lambda$ values of the estimates, but that work is left for another analysis. 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, out.width='67%', fig.align='center'}
+rapm2 <- lm.ridge(formula = point_diff~., data = points,
+                  lambda = seq(0, 5000, 200))
+r2 <- tidy(rapm2)
+g <- glance(rapm2)
+ggplot(r2, aes(lambda, GCV)) + geom_line() + geom_vline(xintercept = g$lambdaGCV, col = "red", lty = 2) + theme_minimal()
+```
 
 # Results
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+ridge.coefs <- ridge.model$coef * 100
+coefs <- model$coef * 100
+lm_var <- diag(vcov(model))* 1000
+s2 <- 1/(nrow(x) - ncol(x)) * t(y - x %*% matrix(ridge.model$coef)) %*% (y - x %*% matrix(ridge.model$coef))
+ridge_var_part1 <- solve(t(x) %*% x + 2000* diag(ncol(x))) %*% t(x) %*% x %*% solve(t(x) %*% x + 2000 * diag(ncol(x)))
+ridge_var <- as.vector(s2) * diag(ridge_var_part1) * 1000
+
+player2019 <- read.csv("Data/Players_2019.csv")
+ModelInfo <- player2019 %>% bind_cols(APM_coef = coefs, APM_var = lm_var, RAPM_coef = ridge.coefs, RAPM_var = ridge_var)
+
+rapm_players <- ModelInfo %>% 
+    dplyr::arrange(desc(RAPM_coef)) %>% 
+    dplyr::select(Player, RAPM_coef, RAPM_var) %>%
+    mutate(RAPM_coef = round(RAPM_coef, digits = 3), 
+           RAPM_var = round(RAPM_var, digits = 3)) %>%                                                                             head(10)
+apm_players <- ModelInfo %>% 
+    dplyr::arrange(desc(APM_coef)) %>% 
+    dplyr::select(Player, APM_coef, APM_var) %>% 
+    mutate(APM_coef = round(APM_coef, digits = 3), 
+           APM_var = round(APM_var, digits = 3)) %>%                                                                             head(10)
+
+knitr::kable(rapm_players)
+knitr::kable(apm_players)
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, out.width='67%', fig.align='center'}
+plot_rapm <- ggplot(ModelInfo, aes(x=(RAPM_coef))) + 
+                geom_histogram(aes(y = ..density..), 
+                               color = 'black',
+                               bins = 10,
+                               fill = '#a9daff') +
+                stat_function(fun = stats::dnorm,
+                              args = list(
+                                  mean = mean(ModelInfo$RAPM_coef, na.rm = TRUE),
+                                  sd = stats::sd(ModelInfo$RAPM_coef, na.rm = TRUE)
+                              ),
+                              col = '#317196',
+                              size = 2) + 
+                xlab("RAPM") +
+                ylab('Density') + 
+                theme_minimal()
+plot_apm <- ggplot(ModelInfo, aes(x=(APM_coef))) + 
+                geom_histogram(aes(y = ..density..), 
+                               color = 'black',
+                               bins = 10,
+                               fill = '#a9daff') +
+                stat_function(fun = stats::dnorm,
+                              args = list(
+                                  mean = mean(ModelInfo$APM_coef, na.rm = TRUE),
+                                  sd = stats::sd(ModelInfo$APM_coef, na.rm = TRUE)
+                              ),
+                              col = '#317196',
+                              size = 2) + 
+                xlab("APM") +
+                ylab('Density') + 
+                theme_minimal()
+plot_apm / plot_rapm
+```
+
+```{r}
+salary <- read.csv("Data/WNBA player salary 20192.csv")
+all_salary <- ModelInfo %>% inner_join(salary, by = "Player")
+ggplot(all_salary, aes(x = Salary, y = RAPM_coef)) + 
+    geom_point(col = '#317196', size = 2) + 
+    labs(y = "RAPM") +
+    scale_x_continuous(labels = scales::dollar_format()) +
+    geom_vline(xintercept = median(all_salary$Salary,na.rm = TRUE, color = "")) +
+    geom_hline(yintercept = 0) +
+    theme_minimal()
+```
+
 
 # Conclusion
 
