@@ -79,15 +79,15 @@ ui <- dashboardPage(
             tabItem(tabName = "stat-corr",
                     fluidRow(
                         box(
-                            selectizeInput("stat_type", "Type of Statistics", c("Per 36 minutes", "Per game")),
+                            selectizeInput("stat_type1", "Type of Statistics", c("Per 36 minutes", "Per game")),
                             conditionalPanel(
-                                condition = "input.stat_type == 'Per 36 minutes'",
-                                selectizeInput('stat', 'Stat Options',
+                                condition = "input.stat_type1 == 'Per 36 minutes'",
+                                selectizeInput('stat_36', 'Stat Options',
                                                numeric_stats_36, selected = "WS")
                             ),
                             conditionalPanel(
-                                condition = "input.stat_type == 'Per game'",
-                                selectizeInput('stat', 'Stat Options',
+                                condition = "input.stat_type1 == 'Per game'",
+                                selectizeInput('stat_game', 'Stat Options',
                                                numeric_stats_game, selected = "WS")
                             ),
                             actionButton('update3', 'Update'),
@@ -107,12 +107,12 @@ ui <- dashboardPage(
                             selectizeInput("stat_type2", "Type of Statistics", c("Per 36 minutes", "Per game")),
                             conditionalPanel(
                                 condition = "input.stat_type2 == 'Per 36 minutes'",
-                                selectizeInput('stat2', 'Stat Options',
+                                selectizeInput('stat2_36', 'Stat Options',
                                                numeric_stats_36, selected = "RAPM")
                             ),
                             conditionalPanel(
                                 condition = "input.stat_type2 == 'Per game'",
-                                selectizeInput('stat2', 'Stat Options',
+                                selectizeInput('stat2_game', 'Stat Options',
                                                numeric_stats_game, selected = "RAPM")
                             ),
                             sliderInput("nbins",
@@ -243,22 +243,31 @@ server <- function(input, output, session){
         plot1
     })
     rplot_stats <- eventReactive(input$update3, {
-        if(input$stat_type == "Per 36 minutes"){
+        if(input$stat_type1 == "Per 36 minutes"){
             all_data <- per_36
-        }
-        if(input$stat_type == "Per game"){
+            plot2 <- all_data %>%
+                ggplot(aes_string(x = input$stat_36, y = 'RAPM')) + 
+                geom_point() + 
+                geom_smooth(method = "lm", se = FALSE, color = "blue3") + 
+                xlab(paste(input$stat_36)) +
+                ylab("RAPM") + 
+                labs(title = paste0("Linear Regression of RAPM vs ", input$stat_36)) + 
+                scale_color_hue(l = 45) +
+                theme_minimal()
+            plot2
+        }else {
             all_data <- per_minute
+            plot2 <- all_data %>%
+                ggplot(aes_string(x = input$stat_game, y = 'RAPM')) + 
+                geom_point() + 
+                geom_smooth(method = "lm", se = FALSE, color = "blue3") + 
+                xlab(paste(input$stat_game)) +
+                ylab("RAPM") + 
+                labs(title = paste0("Linear Regression of RAPM vs ", input$stat_game)) + 
+                scale_color_hue(l = 45) +
+                theme_minimal()
+            plot2
         }
-        plot2 <- all_data %>%
-            ggplot(aes_string(x = input$stat, y = 'RAPM')) + 
-            geom_point() + 
-            geom_smooth(method = "lm", se = FALSE, color = "blue3") + 
-            xlab(paste(input$stat)) +
-            ylab("RAPM") + 
-            labs(title = paste0("Linear Regression of RAPM vs ", input$stat)) + 
-            scale_color_hue(l = 45) +
-            theme_minimal()
-        plot2
     })
     rplot_selected <- eventReactive(input$update2, {
         if(input$stat_type == "Per 36 minutes"){
@@ -278,81 +287,106 @@ server <- function(input, output, session){
         }
     })
     r2 <- eventReactive(input$update3, {
-        if(input$stat_type == "Per 36 minutes"){
+        if(input$stat_type1 == "Per 36 minutes"){
             all_data <- per_36
-        }
-        if(input$stat_type == "Per game"){
+            model_formula <- as.formula(paste0("RAPM ~ ", input$stat_36))
+            model <- lm(model_formula, data = all_data)
+            r2 <- summary(model)$r.squared
+            r2
+        } else{
             all_data <- per_minute
+            model_formula <- as.formula(paste0("RAPM ~ ", input$stat_game))
+            model <- lm(model_formula, data = all_data)
+            r2 <- summary(model)$r.squared
+            r2
         }
-        model_formula <- as.formula(paste0("RAPM ~ ", input$stat))
-        model <- lm(model_formula, data = all_data)
-        r2 <- summary(model)$r.squared
         r2
     })
     cor_coef <- eventReactive(input$update3, {
-        if(input$stat_type == "Per 36 minutes"){
+        if(input$stat_type1 == "Per 36 minutes"){
             all_data <- per_36
-        }
-        if(input$stat_type == "Per game"){
+            corr_var <- cor(all_data[,"RAPM"], all_data[,paste(input$stat_36)])
+            corr_var
+        } else{
             all_data <- per_minute
+            corr_var <- cor(all_data[,"RAPM"], all_data[,paste(input$stat_game)])
+            corr_var
         }
-        corr_var <- cor(all_data[,"RAPM"], all_data[,paste(input$stat)])
         corr_var
     })
     rplot_dist <- eventReactive(input$update4, {
         if(input$stat_type2 == "Per 36 minutes"){
             all_data <- per_36 %>% select_if(is.numeric)
-        }
-        if(input$stat_type2 == "Per game"){
+            plot <- ggplot(all_data, aes_string(x= input$stat2_36)) + 
+                geom_histogram(aes(y = ..density..), 
+                               color = 'black',
+                               bins = input$nbins,
+                               fill = '#a9daff') +
+                stat_function(fun = stats::dnorm,
+                              args = list(
+                                  mean = mean(all_data %>%  dplyr::pull(input$stat2_36), na.rm = TRUE),
+                                  sd = stats::sd(all_data %>%  dplyr::pull(input$stat2_36), na.rm = TRUE)
+                              ),
+                              col = '#317196',
+                              size = 2) + 
+                xlab(input$stat2_36) +
+                ylab('Density') +
+                ggtitle(paste0("Histogram and Density Plot of ", input$stat2_36)) + 
+                theme_minimal()
+            plot
+        }else {
             all_data <- per_minute %>% select_if(is.numeric)
+            plot <- ggplot(all_data, aes_string(x= input$stat2_game)) + 
+                geom_histogram(aes(y = ..density..), 
+                               color = 'black',
+                               bins = input$nbins,
+                               fill = '#a9daff') +
+                stat_function(fun = stats::dnorm,
+                              args = list(
+                                  mean = mean(all_data %>%  dplyr::pull(input$stat2_game), na.rm = TRUE),
+                                  sd = stats::sd(all_data %>%  dplyr::pull(input$stat2_game), na.rm = TRUE)
+                              ),
+                              col = '#317196',
+                              size = 2) + 
+                xlab(input$stat2_game) +
+                ylab('Density') +
+                ggtitle(paste0("Histogram and Density Plot of ", input$stat2_game)) + 
+                theme_minimal()
+            plot
         }
-        plot <- ggplot(all_data, aes_string(x= input$stat2)) + 
-            geom_histogram(aes(y = ..density..), 
-                           color = 'black',
-                           bins = input$nbins,
-                           fill = '#a9daff') +
-            stat_function(fun = stats::dnorm,
-                          args = list(
-                              mean = mean(all_data %>%  dplyr::pull(input$stat2), na.rm = TRUE),
-                              sd = stats::sd(all_data %>%  dplyr::pull(input$stat2), na.rm = TRUE)
-                          ),
-                          col = '#317196',
-                          size = 2) + 
-            xlab(input$stat2) +
-            ylab('Density') +
-            ggtitle(paste0("Histogram and Density Plot of ", input$stat2)) + 
-            theme_minimal()
-        plot
     })
     dist_mean <- eventReactive(input$update4, {
-        if(input$stat_type == "Per 36 minutes"){
+        if(input$stat_type2 == "Per 36 minutes"){
             all_data <- per_36 %>% select_if(is.numeric)
-        }
-        if(input$stat_type == "Per game"){
+            mu <- mean(all_data[,paste(input$stat2_36)], na.rm = TRUE)
+            mu
+        }else{
             all_data <- per_minute %>% select_if(is.numeric)
+            mu <- mean(all_data[,paste(input$stat2_game)], na.rm = TRUE)
+            mu
         }
-        mu <- mean(all_data[,paste(input$stat2)], na.rm = TRUE)
-        mu
     })
     dist_sd <- eventReactive(input$update4, {
-        if(input$stat_type == "Per 36 minutes"){
+        if(input$stat_type2 == "Per 36 minutes"){
             all_data <- per_36 %>% select_if(is.numeric)
-        }
-        if(input$stat_type == "Per game"){
+            std <- sd(all_data[,paste(input$stat2_36)], na.rm = TRUE)
+            std
+        } else{
             all_data <- per_minute %>% select_if(is.numeric)
+            std <- sd(all_data[,paste(input$stat2_game)], na.rm = TRUE)
+            std
         }
-        std <- sd(all_data[,paste(input$stat2)], na.rm = TRUE)
-        std
     })
     dist_median <- eventReactive(input$update4, {
-        if(input$stat_type == "Per 36 minutes"){
+        if(input$stat_type2 == "Per 36 minutes"){
             all_data <- per_36 %>% select_if(is.numeric)
-        }
-        if(input$stat_type == "Per game"){
+            med <- median(all_data[,paste(input$stat2_36)], na.rm = TRUE)
+            med
+        }else{
             all_data <- per_minute %>% select_if(is.numeric)
+            med <- median(all_data[,paste(input$stat2_game)], na.rm = TRUE)
+            med
         }
-        med <- median(all_data[,paste(input$stat2)], na.rm = TRUE)
-        med
     })
     output$selected <- renderDataTable({
         datatable(rplot_selected(), rownames = FALSE, options = list(scrollX='400px'))
@@ -370,7 +404,8 @@ server <- function(input, output, session){
     )
     output$box1 <- renderInfoBox({
         
-        req(input$stat)
+        req(input$stat_36)
+        req(input$stat_game)
         
         infoBox(
             "R-squared", 
@@ -382,7 +417,8 @@ server <- function(input, output, session){
     })
     output$box2 <- renderInfoBox({
         
-        req(input$stat)
+        req(input$stat_36)
+        req(input$stat_game)
         
         infoBox(
             "Correlation Coefficient", 
@@ -393,11 +429,12 @@ server <- function(input, output, session){
         )
     })
     output$box3 <- renderInfoBox({
-        
-        req(input$stat2)
-        
+
+        req(input$stat2_36)
+        req(input$stat2_game)
+
         infoBox(
-            "Mean", 
+            "Mean",
             round(dist_mean(), digits = 3),
             icon = icon('basketball-ball'),
             color = 'light-blue',
@@ -405,11 +442,12 @@ server <- function(input, output, session){
         )
     })
     output$box4 <- renderInfoBox({
-        
-        req(input$stat2)
-        
+
+        req(input$stat2_36)
+        req(input$stat2_game)
+
         infoBox(
-            "Median", 
+            "Median",
             round(dist_median(), digits = 3),
             icon = icon('basketball-ball'),
             color = 'light-blue',
@@ -417,11 +455,12 @@ server <- function(input, output, session){
         )
     })
     output$box5 <- renderInfoBox({
-        
-        req(input$stat2)
-        
+
+        req(input$stat2_36)
+        req(input$stat2_game)
+
         infoBox(
-            "Standard Deviation", 
+            "Standard Deviation",
             round(dist_sd(), digits = 3),
             icon = icon('basketball-ball'),
             color = 'light-blue',
