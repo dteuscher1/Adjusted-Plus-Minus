@@ -49,7 +49,7 @@ ridgeModelInfo <- data.frame('RAPM Coefficients' = ridge.coefs, 'RAPM Coefficien
 
 
 player2019 <- read.csv("../Data/Players_2019.csv")
-ModelInfo <- player2019 %>% bind_cols(APM_coef = coefs, APM_var = lm_var, RAPM_coef = ridge.coefs, RAPM_var = ridge_var)
+ModelInfo <- player2019 %>% arrange(Player) %>% bind_cols(APM_coef = coefs, APM_var = lm_var, RAPM_coef = ridge.coefs, RAPM_var = ridge_var)
 
 ModelInfo %>% arrange(desc(RAPM_coef)) %>% dplyr::select(Player, RAPM_coef, RAPM_var)
 ModelInfo %>% arrange(desc(APM_coef)) %>% dplyr::select(Player, APM_coef, APM_var)
