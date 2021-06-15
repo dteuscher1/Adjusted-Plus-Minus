@@ -1,5 +1,5 @@
 ## David Teuscher
-## Last updated: 29.05.2021
+## Last updated: 14.06.2021
 ## This script creates a dataset that includes the winner and loser for each game, 
 ## the game date and the ESPN game id as well as the abbreviations for both the home 
 # away teams for ESPN and Basketball reference
@@ -101,9 +101,11 @@ game_info <- game_info %>% filter(Winner != "WIL") %>%
 
 # Read in a file that has the team abbreviations that ESPN uses and the 
 # abbreviations that Basketball Reference uses and join them together
-teams <- read.csv("team_abbreviations.csv")
+teams <- read.csv("Data/team_abbreviations.csv")
 game_info <- game_info %>% 
     inner_join(teams, by = c('away_abr' = 'espn')) %>% 
     inner_join(teams, by = c('home_abr' = 'espn')) %>%
     rename(bref_away = bref.x,
            bref_home = bref.y)
+
+#write.csv(game_info, "Data/game_info_2019.csv")

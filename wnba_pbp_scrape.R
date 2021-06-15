@@ -1,5 +1,5 @@
 ## David Teuscher
-## Latest changes: 08.06.2021
+## Latest changes: 14.06.2021
 ## This script creates a function that takes the play by play data for 
 ## a game and determines the players on the court and when possessions change
 ########################################################
@@ -11,7 +11,7 @@ library(wehoop)
 library(tidyverse)
 library(rvest)
 # Read in the game info file
-game_info <- read.csv("game_info_2019.csv")
+game_info <- read.csv("Data/game_info_2019.csv")
 
 # A single game game be examined using this code
 #pbp <- espn_wnba_pbp("401104913")

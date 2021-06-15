@@ -49,5 +49,5 @@ game_id <- empty_data_frame$game_id[points]
 
 # Create a data frame and save the data 
 point_diff_2019 <- data.frame(game_id, home_possession, X_small, point_diff = y)
-write_csv(point_diff_2019, "point_diff_2019_updated.csv")
+#write_csv(point_diff_2019, "Data/point_diff_2019_updated.csv")
 
