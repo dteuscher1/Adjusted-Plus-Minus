@@ -1,1 +1,13 @@
-# AdjustedPlusMinus
+# Adjusted Plus Minus Models
+
+This repository contains work on gathering play by play data for WNBA games and fitting adjusted plus minus models to determine player value for WNBA players. A description of the important files will be included. 
+
+`Game_dates.R` takes the beginning and ending days of a WNBA season and scrapes information for each game during the season, included the winner and loser, the home and away teams, the ESPN game id, and the date of the game. This information is important when referencing the play by play data from Basketball Reference. 
+
+`wnba_pbp_scrape.R` creates a function that will take the ESPN play by play data for a single WNBA game, determines the players on the floor for both teams, and then parses the play by play into possessions and determines the point differential. There are some substitutions that are not correctly recorded in the ESPN play by play data and the function will look up the play by play data from [Basketball Reference](https://www.basketball-reference.com/) in order to determine the correct substitution. There are some substitutions that can't be resolved by referring to Basketball Reference, which means they need to be fixed manually or data after incorrect substitutions should be thrown out. 
+
+`clean_data.R` is an R script that fixes errors in the 2019 WNBA play by play data that can't be fixed by referring to Basketball Reference. This script only works for the 2019 season, but can be adapted to fix errors in other seasons as this work and analysis is expanded to future seasons. 
+
+`create_matrix.R` takes the function to parse the data and to clean the data for the 2019 season and applies it to every game for 2019. Once the data is parsed, a matrix is created that includes a row for each possession during the season and a column for every player who played during the season. There is also a column that includes an indicator variable for whether or not the home team had possession of the ball. This function writes the resulting matrix to a csv file that is used for fitting the model. 
+
+`WNBA Table Manipulation.Rmd` takes the matrix from the .csv and fits two different models. One model is adjusted plus-minus (APM), which is a multiple linear regression model. The second model that is fit is for regularized adjusted plus-minus (RAPM), which is a ridge regression model, shrinking the coefficients for players down to 0. The shrinkage parameter, $\lambda$, was set at 2000 based on previous research done by [Joseph Sill](https://supermariogiacomazzo.github.io/STOR538_WEBSITE/Articles/Basketball/Basketball_Sill.pdf). These models are fit and the associated coefficients are obtained as well as the variance for the respective coefficients. The variance of the coefficients is smaller for the RAPM model in comparison to the APM model. 
