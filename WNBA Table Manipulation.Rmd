@@ -316,6 +316,6 @@ player_2019_info_per_minutes <- player2019pm %>% arrange(Player) %>% mutate(APM 
 players_2019_per_minutes <- player_2019_info_per_minutes %>% left_join(salaries %>% dplyr::select(Player, Salary), by = "Player")
 
 # Write the file to a csv
-write.csv(players_2019_per_minutes, 'Data/shiny_data_per_36.csv')
+#write.csv(players_2019_per_minutes, 'Data/shiny_data_per_36.csv')
 
 ```
