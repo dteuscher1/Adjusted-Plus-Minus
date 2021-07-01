@@ -382,13 +382,13 @@ possession_data <- function(gameid, data){
     }
     # If the last free throw is made but a substitution was made before the last free throw
     # Make the possession change before the free throw
-    if((possession$type_text[i] == "Free Throw - 1 of 1" || 
-        possession$type_text[i] == "Free Throw - 2 of 2" || 
-        possession$type_text[i] == "Free Throw - 3 of 3") && 
-       (possession$type_text[i-1] == "Substitution")){
-      change_possession[i] <- 0
-      change_possession[i-1] <- 1
-    }
+    # if((possession$type_text[i] == "Free Throw - 1 of 1" || 
+    #     possession$type_text[i] == "Free Throw - 2 of 2" || 
+    #     possession$type_text[i] == "Free Throw - 3 of 3") && 
+    #    (possession$type_text[i-1] == "Substitution")){
+    #   change_possession[i] <- 0
+    #   change_possession[i-1] <- 1
+    # }
     # The possession doesn't change if the free throw isn't the last one
     if(possession$type_text[i] %in% free_throws){
       change_possession[i] <- 0
