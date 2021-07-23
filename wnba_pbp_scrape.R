@@ -14,8 +14,8 @@ library(rvest)
 game_info <- read.csv("Data/game_info_2019.csv")
 
 # A single game game be examined using this code
-#pbp <- espn_wnba_pbp("401104913")
-#gameid <- "401104913"
+#pbp <- espn_wnba_pbp("401104982")
+#gameid <- "401104982"
 
 # Function to parse the play by play data into each possession
 # Inputs: Game id for the game from ESPN; If the game_info file is scraped correctly, the

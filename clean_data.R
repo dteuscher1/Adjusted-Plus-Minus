@@ -23,6 +23,8 @@ clean_data <- function(year){
         pbp_2019$text[pbp_2019$game_id == 401104962 & pbp_2019$game_play_number == 89] <- "Marie Gulich enters the game for Elizabeth Williams"
         pbp_2019$text[pbp_2019$game_id == 401104965 & pbp_2019$game_play_number == 86] <- "Han Xu enters the game for Tina Charles"
         pbp_2019$text[pbp_2019$game_id == 401104982 & pbp_2019$game_play_number == 289] <- "Odyssey Sims enters the game for Danielle Robinson"
+        pbp_2019$text[pbp_2019$game_id == 401104982 & pbp_2019$game_play_number == 362] <- "Imani McGee-Stafford enters the game for Isabelle Harrison"
+        pbp_2019$text[pbp_2019$game_id == 401104982 & pbp_2019$game_play_number == 378] <- "Kaela Davis enters the game for Isabelle Harrison"
         pbp_2019$text[pbp_2019$game_id == 401104983 & pbp_2019$game_play_number == 290] <- "Kalani Brown enters the game for Riquna Williams"
         pbp_2019$text[pbp_2019$game_id == 401104994 & pbp_2019$game_play_number == 95] <- "Natasha Cloud enters the game for Kristi Toliver"
         pbp_2019$text[pbp_2019$game_id == 401104999 & pbp_2019$game_play_number == 79] <- "Myisha Hines-Allen enters the game for Kristi Toliver"
@@ -57,6 +59,7 @@ clean_data <- function(year){
         pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104937 & pbp_2019$game_play_number == 109), ]
         pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104944 & pbp_2019$game_play_number == 90), ]
         pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104982 & pbp_2019$game_play_number == 290), ]
+        pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104982 & pbp_2019$game_play_number == 376), ]
         pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104983 & pbp_2019$game_play_number == 291), ]
         pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104983 & pbp_2019$game_play_number == 292), ]
         pbp_2019 <- pbp_2019[-which(pbp_2019$game_id == 401104994 & pbp_2019$game_play_number == 96), ]
