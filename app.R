@@ -174,6 +174,7 @@ ui <- dashboardPage(
                                 p(strong("Salary: "), "Season salary for player"), 
                                 p(strong("ESPN: "), "ESPN team abbreviation"),
                                 p(strong("Team_Name: "), "Team name"),
+                                p(strong("POS: "), "Total possessions played for the season"),
                                 h3(strong("Per 36 minute stats")),
                                 p(strong("FGPM: "), "Field goals made per 36 minutes"),
                                 p(strong("FGAPM: "), "Field goals attempted per 36 minutes"),
@@ -191,6 +192,7 @@ ui <- dashboardPage(
                                 p(strong("TPM: "), "Turnovers per 36 minutes"),
                                 p(strong("PFPM: "), "Personal fouls per 36 minutes"),
                                 p(strong("PPM: "), "Points per 36 minutes"),
+                                p(strong("POPM: "), "Possessions played per 36 minutes"),
                                 h3(strong("Per game stats")),
                                 p(strong("FGPG: "), "Field goals made per game"),
                                 p(strong("FGAPG: "), "Field goals attempted per game"),
@@ -208,7 +210,8 @@ ui <- dashboardPage(
                                 p(strong("BPG: "), "Blocks per game"),
                                 p(strong("TPG: "), "Turnovers per game"),
                                 p(strong("PFPG: "), "Personal fouls per game"),
-                                p(strong("PPG: "), "Points per game")
+                                p(strong("PPG: "), "Points per game"),
+                                p(strong("POPG: "), "Possessions played per game")
                             )
                         )
                     )

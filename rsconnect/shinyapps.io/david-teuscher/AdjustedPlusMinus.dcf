@@ -1,0 +1,14 @@
+name: AdjustedPlusMinus
+title: AdjustedPlusMinus
+username:
+account: david-teuscher
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4272122
+bundleId: 4861495
+url: https://david-teuscher.shinyapps.io/AdjustedPlusMinus/
+when: 1627414266.66754
+lastSyncTime: 1627414266.66755
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: AdjustedPlusMins.bibtex|clean_data.R|create_matrix.R|extra_files/Automatic APM.Rmd|extra_files/IS 590R Graphs.Rmd|extra_files/Player Matrices.Rmd|extra_files/wnba_pbp_scrape.py|Game_dates.R|README.md|Report.pdf|Report.Rmd|WNBA Table Manipulation.Rmd|wnba_pbp_scrape.R
