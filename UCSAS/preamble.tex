@@ -1,0 +1,85 @@
+\usepackage[utf8]{inputenc}
+\usepackage{caption}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{graphicx}
+\usepackage{graphbox}
+
+%% modifying the page size
+%% width and heigth control the size of the poster, while scale controls
+%% the font size
+\usepackage[size=custom, width=107, height=77, scale=4, orientation=landscape]{beamerposter}
+
+\geometry{ hmargin=5cm,   vmargin=2.5cm,   head=0.5cm,  foot=0.5cm}
+
+%% avoiding title
+\AtBeginDocument{\let\maketitle\relax}
+
+% \setbeamertemplate{footline}{%
+%   \hspace*{.05in}
+%   \includegraphics[align=l, height=2.4cm]{logo.eps}%
+%   \hbox{\begin{beamercolorbox}[wd=.5\paperwidth,ht=2.5ex,dp=1.125ex, leftskip=-.10cm
+%       plus1fill,rightskip=.3cm]{author in head/foot}%
+%       \usebeamerfont{author in
+%         head/foot}\insertauthor
+%     \end{beamercolorbox}}
+%     \hbox{\begin{beamercolorbox}[wd=.5\paperwidth,ht=2.5ex,dp=1.125ex, leftskip=-.10cm
+%       plus1fill]{author in head/foot}%
+%       \usebeamerfont{UCSAS 2020 in
+%         head/foot}
+%     \end{beamercolorbox}}
+% }
+
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \hbox{
+    \begin{beamercolorbox}[wd=.333333\paperwidth,ht=4.25ex,dp=4.5ex,left]{author in head/foot}%
+      \usebeamerfont{institute in
+        head/foot}\includegraphics[align=l, height=3.2cm]{logo}%
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.333333\paperwidth, center]{author in head/foot}%
+      \usebeamerfont{author in
+        head/foot}\insertauthor
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.32\paperwidth,ht=4.25ex,dp=4.5ex,right]{author in head/foot}%
+      \usebeamerfont{event in
+        head/foot}\text{UCSAS 2020}
+    \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+% \setbeamertemplate{footline}
+% {
+%   \leavevmode%
+%   \hbox{%
+%   \begin{beamercolorbox}[wd=.333333\paperwidth,ht=4.25ex,dp=1ex,left]{author in head/foot}%
+%     \raisebox{.8\baselineskip}{\parbox[t][4ex][t]{.333333\paperwidth}{\raggedright\hskip1ex\usebeamerfont{author in head/foot}%
+%     \raisebox{-,5\height}{\inserttitlegraphic}\hskip2ex\insertshortinstitute}}
+%   \end{beamercolorbox}%
+%   \begin{beamercolorbox}[wd=.333333\paperwidth,ht=4.25ex,dp=1ex,center]{title in head/foot}%
+%     \usebeamerfont{title in head/foot}\raisebox{.8\baselineskip}{\parbox[t][4ex][t]{.333333\paperwidth}{\centering\insertdefensetext\par\insertdepartament}}
+%   \end{beamercolorbox}%
+%   \begin{beamercolorbox}[wd=.333333\paperwidth,ht=4.25ex,dp=1ex,right]{date in head/foot}%
+%     \raisebox{.8\baselineskip}{\parbox[t][4ex][t]{.333333\paperwidth}{\raggedleft\usebeamerfont{date in head/foot}\insertframenumber{} / \inserttotalframenumber\hspace*{2ex}}} 
+%   \end{beamercolorbox}}%
+%   \vskip0pt%
+% }%
+
+
+%% multicolumn support
+\newenvironment{cols}[1][]{}{}
+
+\newenvironment{col}[1]{\begin{minipage}{#1}\ignorespaces}{%
+\end{minipage}
+\ifhmode\unskip\fi
+\aftergroup\useignorespacesandallpars}
+
+\def\useignorespacesandallpars#1\ignorespaces\fi{%
+#1\fi\ignorespacesandallpars}
+
+\makeatletter
+\def\ignorespacesandallpars{%
+  \@ifnextchar\par
+    {\expandafter\ignorespacesandallpars\@gobble}%
+    {}%
+}
+\makeatother
