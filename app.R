@@ -3,6 +3,11 @@ library(plotly)
 per_36 <- read.csv("Data/shiny_data_per_36.csv")[,-1] %>% filter(Tm != "TOT")
 per_minute <- read.csv("Data/shiny_data_per_game.csv")[,-1] %>% filter(Tm != "TOT")
 teams <- read.csv("Data/team_abbreviations.csv")
+player_possessions <- read.csv("Data/possessions_player.csv")
+rownames(player_possessions) <- player_possessions$Player
+names(player_possessions) <- c(rownames(player_possessions), "Player", "Tm")
+player_possessions <- player_possessions %>% inner_join(teams, by = c("Tm" = "bref"))
+rownames(player_possessions) <- player_possessions$Player
 per_36 <- per_36 %>% inner_join(teams, by = c('Tm' = "bref"))
 per_minute <- per_minute %>% inner_join(teams, by = c('Tm' = "bref"))
 unique_teams <- c(unique(per_minute$Team_Name), "League")
@@ -10,14 +15,15 @@ unique_stats_36 <- names(per_36)
 unique_stats_game <- names(per_minute)
 numeric_stats_36 <- per_36 %>% select_if(is.numeric) %>% names()
 numeric_stats_game <- per_minute %>% select_if(is.numeric) %>% names()
+
 library(shiny)
 library(shinythemes)
 library(shinydashboard)
 library(shinyjs)
-library(shiny)
 library(RColorBrewer)
 library(DT)
 library(shinyWidgets)
+library(chorddiag)
 
 ui <- dashboardPage(
     dashboardHeader(title = "WNBA Player Value"),
@@ -27,6 +33,7 @@ ui <- dashboardPage(
             menuItem("Salaries", tabName = "Salaries", icon = icon("dollar-sign")),
             menuItem("Statistic Relationships", tabName = "stat-corr", icon = icon("th")),
             menuItem("Distribution", tabName = "stat-dist", icon = icon("chart-bar")),
+            menuItem("Player Possession", tabName = "poss", icon = icon("book")),
             menuItem("Data Glossary", tabName = "glossary", icon = icon("book"))
         )
     ),
@@ -132,6 +139,15 @@ ui <- dashboardPage(
                         )    
                     )
             ),
+            tabItem(tabName = "poss",
+                    fluidRow(
+                        selectizeInput("team_chord", "Choose a team", unique_teams),
+                        actionButton('update5', 'Update')
+                    ),
+                    fluidRow(
+                         box(chorddiagOutput('chorddiag'))
+                       )
+                    ),
             tabItem(tabName = "glossary",
                     fluidRow(
                         column(1),
@@ -391,6 +407,15 @@ server <- function(input, output, session){
             med
         }
     })
+    rplot_chord_diag <- eventReactive(input$update5, {
+        data <- player_possessions %>% 
+            filter(Team_Name %in% 'Las Vegas Aces') %>% 
+            dplyr::select(-Player, -Tm, -espn, -Team_Name)
+        data <- data[,names(data) %in% rownames(data)] %>%
+            as.matrix()
+        cols <- c(rep("#808080", 12), "#ff9900")
+        chorddiag(data, groupColors = cols, groupnamePadding = 10, showTicks = FALSE, groupnameFontsize = 12)
+    })
     output$selected <- renderDataTable({
         datatable(rplot_selected(), rownames = FALSE, options = list(scrollX='400px'))
     })
@@ -471,6 +496,7 @@ server <- function(input, output, session){
         )
     })
     output$stat_dist <- renderPlot(rplot_dist())
+    output$chorddiag <- renderChorddiag(rplot_chord_diag())
 }
 
 
