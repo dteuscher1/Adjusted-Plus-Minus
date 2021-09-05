@@ -24,6 +24,10 @@ library(RColorBrewer)
 library(DT)
 library(shinyWidgets)
 library(chorddiag)
+library(teamcolors)
+library(ggthemes)
+
+team_colors <- data.frame(Team_Name = sort(unique(per_36$Team_Name)), col = league_pal('wnba', which = 1))
 
 ui <- dashboardPage(
     dashboardHeader(title = "WNBA Player Value"),
@@ -149,7 +153,7 @@ ui <- dashboardPage(
                     ),
                     fluidRow(
                          box(width = 10,
-                             chorddiagOutput('chorddiag', height = 750))
+                             chorddiagOutput('chorddiag', height = 850))
                        )
                     ),
             tabItem(tabName = "glossary",
@@ -417,10 +421,22 @@ server <- function(input, output, session){
             dplyr::select(-Player, -Tm, -espn, -Team_Name)
         data <- data[,names(data) %in% rownames(data)]
         player_ind <- which(names(data) == input$player_choice)
-        data <- data %>% as.matrix()
-        cols <- c(rep("#808080", nrow(data) - 1), "#ff9900")
+        if(input$player_choice == "None"){
+            pal <- ggthemes::tableau_color_pal("Classic Cyclic")
+            cols <- pal(nrow(data))
+        } else{
+            #cols <- c(rep("#D3D3D3", nrow(data) - 1), "#000080")
+            cols <- c(rep("#D3D3D3", nrow(data)))
+            sort_cols <- data.frame(Player = names(data), color = cols, playernum = 1:nrow(data))
+            sort_cols[player_ind, 'color'] <- team_colors[team_colors$Team_Name == input$team_chord, "col"]
+            sort_cols <- sort_cols %>% arrange(desc(color))
+            cols <- sort_cols$color
+            data <- data[sort_cols$playernum,sort_cols$Player]
+        }
         #cols[player_ind] <- "#ff9900"
-        chorddiag(data, groupColors = cols, groupnamePadding = 10, showTicks = FALSE, groupnameFontsize = 12)
+        data <- data %>% as.matrix()
+        chorddiag(data, groupColors = cols, margin = 137, groupnamePadding = 10, showTicks = FALSE, groupnameFontsize = 12, 
+                  tooltipGroupConnector = " and ")
     })
     output$selected <- renderDataTable({
         datatable(rplot_selected(), rownames = FALSE, options = list(scrollX='400px'))
@@ -506,9 +522,10 @@ server <- function(input, output, session){
     output$player_choice <- renderUI({
         selectInput("player_choice", 
                     label="Highlight a player",
-                    choices=per_36[per_36$Team_Name == input$team_chord, "Player"])
+                    choices=c("None", per_36[per_36$Team_Name == input$team_chord, "Player"]), "None")
     })
 }
 
 
 shinyApp(ui = ui, server = server)
+
