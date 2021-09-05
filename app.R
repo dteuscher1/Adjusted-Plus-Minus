@@ -33,7 +33,7 @@ ui <- dashboardPage(
             menuItem("Salaries", tabName = "Salaries", icon = icon("dollar-sign")),
             menuItem("Statistic Relationships", tabName = "stat-corr", icon = icon("th")),
             menuItem("Distribution", tabName = "stat-dist", icon = icon("chart-bar")),
-            menuItem("Player Possession", tabName = "poss", icon = icon("book")),
+            menuItem("Player Possessions", tabName = "poss", icon = icon("book")),
             menuItem("Data Glossary", tabName = "glossary", icon = icon("book"))
         )
     ),
@@ -141,11 +141,15 @@ ui <- dashboardPage(
             ),
             tabItem(tabName = "poss",
                     fluidRow(
-                        selectizeInput("team_chord", "Choose a team", unique_teams),
-                        actionButton('update5', 'Update')
+                        box(
+                            selectizeInput("team_chord", "Choose a team", unique_teams),
+                            uiOutput('player_choice'),
+                            actionButton('update5', 'Update')
+                        )    
                     ),
                     fluidRow(
-                         box(chorddiagOutput('chorddiag'))
+                         box(width = 10,
+                             chorddiagOutput('chorddiag', height = 750))
                        )
                     ),
             tabItem(tabName = "glossary",
@@ -409,11 +413,13 @@ server <- function(input, output, session){
     })
     rplot_chord_diag <- eventReactive(input$update5, {
         data <- player_possessions %>% 
-            filter(Team_Name %in% 'Las Vegas Aces') %>% 
+            filter(Team_Name %in% input$team_chord) %>% 
             dplyr::select(-Player, -Tm, -espn, -Team_Name)
-        data <- data[,names(data) %in% rownames(data)] %>%
-            as.matrix()
-        cols <- c(rep("#808080", 12), "#ff9900")
+        data <- data[,names(data) %in% rownames(data)]
+        player_ind <- which(names(data) == input$player_choice)
+        data <- data %>% as.matrix()
+        cols <- c(rep("#808080", nrow(data) - 1), "#ff9900")
+        #cols[player_ind] <- "#ff9900"
         chorddiag(data, groupColors = cols, groupnamePadding = 10, showTicks = FALSE, groupnameFontsize = 12)
     })
     output$selected <- renderDataTable({
@@ -497,6 +503,11 @@ server <- function(input, output, session){
     })
     output$stat_dist <- renderPlot(rplot_dist())
     output$chorddiag <- renderChorddiag(rplot_chord_diag())
+    output$player_choice <- renderUI({
+        selectInput("player_choice", 
+                    label="Highlight a player",
+                    choices=per_36[per_36$Team_Name == input$team_chord, "Player"])
+    })
 }
 
 
