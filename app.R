@@ -33,16 +33,56 @@ ui <- dashboardPage(
     dashboardHeader(title = "WNBA Player Value"),
     dashboardSidebar(
         sidebarMenu(
+            menuItem("Intro", tabName = "intro", icon = icon("list")),
             menuItem("Player Information", tabName = "player-info", icon = icon("dashboard")),
             menuItem("Salaries", tabName = "Salaries", icon = icon("dollar-sign")),
             menuItem("Statistic Relationships", tabName = "stat-corr", icon = icon("th")),
             menuItem("Distribution", tabName = "stat-dist", icon = icon("chart-bar")),
-            menuItem("Player Possessions", tabName = "poss", icon = icon("book")),
+            menuItem("Player Possessions", tabName = "poss", icon = icon("basketball-ball")),
             menuItem("Data Glossary", tabName = "glossary", icon = icon("book"))
         )
     ),
     dashboardBody(
         tabItems(
+            tabItem(tabName = "intro",
+                    fluidRow(
+                        column(1),
+                        box(
+                            width = 10,
+                            h1(strong("Adjusted Plus Minus Models for WNBA")),
+                            p("This app shows the results of adjusted-plus minus models that were fit for WNBA players in the 2019 season. The details about the different aspects of the app
+                              are described below. The purpose of this app is to present and visualize the results from fitting adjusted plus-minus models
+                              on WNBA data. Player season statistics were obtained from Stathead and play-by-play data was scraped from ESPN and Basketball Reference. This began as a class project for IS 590R at BYU and was worked on by David Teuscher, Brad Hymas, Cecelia Fu, Chase Cardon,
+                              Cameron Jones, Sam Francis, and Tanner Darm. Since finishing the class project, additional work has been done by David Teuscher and Brad Hymas. Any questions
+                              about the work done, either about the Shiny app or the data collection or modeling process should be directed to David or Brad."),
+                            h3(strong("Player Information:")),
+                            p("The player information tab allows the user to filter for players in the whole league or on certain teams and to select statistics
+                              that are interesting to them. The statistics are available on a per game basis or normalized to be reported per 36 minutes, which is
+                              common for NBA statistics. An option to download the table that the user selected is available as well."),
+                            h3(strong("Salaries:")),
+                            p("The salaries tab provides a interactive visualization of player salary against regularized adjusted plus-minus (RAPM). 
+                              The visualization can be filtered to include specific teams and when hovering over a point, it will provide the player name,
+                              salary, and RAPM"),
+                            h3(strong("Statistic Relationships:")),
+                            p("Statistic relationships are shown through a scatterplot between a statistic of choice and RAPM. It 
+                              is used to illustrate the relationship between common box score statistics and RAPM. The R-squared value 
+                              and correlation coefficent for a simple linear regression for the statistic and RAPM are displayed as well. 
+                              The statistics can be selected from the per game scale or the per 36 minutes scale."),
+                            h3(strong("Distribution:")),
+                            p("The distribution for any of the possible statistics can be explored on this tab. A statistic is selected and the 
+                              user is given the option to select the number of bins for a histogram of the statistic for all WNBA players in 2019.
+                              The mean, median, and standard deviation for the selected statistic is displayed alongside the histogram of the statistic.
+                              The option to select statistics on the per game or per 36 minutes scale is once again provided."),
+                            h3(strong("Player Possessions")),
+                            p("The player possessions tab provide an interactive visualization that shows how many possessions a player played
+                              with each of their teammates through a chord diagram. When hovering over the chart, the amount of possessions two players
+                              played on the court with each other will be shown. The option to highlight a specific player from a team is given to the
+                              user. If no player is selected, the teams is filled with different colors"),
+                            h3(strong("Data Glossary")),
+                            p("The data glossary provides an explanation for all of the available statisics and what they mean since the variable to be selected
+                              for many of the chart may not be understood by all users. Refer to the glossary if there are any questions about a variable.")
+                        ))
+                    ),
             # First tab content
             tabItem(tabName = "player-info",
                     fluidRow(
