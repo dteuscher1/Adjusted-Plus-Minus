@@ -1,30 +1,24 @@
 ---
-author: "<your-email-here@something.com>"
+author: "david.teuscher.96@gmail.com       hymasbrad@gmail.com"
 output: 
   beamer_presentation:
     theme: "default"
     colortheme: "default"
-    fonttheme: "serif"
+    fonttheme: "professionalfonts"
     includes:
       in_header: preamble.tex
 ---
 
 # WNBA Adjusted Plus-Minus Models
 
-_David Teuscher^1^, Brad Hymas^2^_  
-\footnotesize ^1^ University One  
-\footnotesize ^2^ Institution Two
+**David Teuscher and Brad Hymas** 
+\footnotesize $\textit{Work done under the supervision of Paul Sabin}$     
+\footnotesize $\textit{Brigham Young University}$  
   
-**Abbreviated abstract:** Abbreviate abstract of ~75 words.  
+**Abbreviated abstract:** Athletes are acquired and offered contracts based on individual performance, but for team sports, the athletes' performance is impacted by the other players on the court or field. Sports like basketball and football are difficult to determine the value of individual players because of the interactions between many different players at one time. Adjusted plus-minus models have been implemented in the NBA to evaluate individual player worth independent of a player's teammates. Similar models are not widespread for the WNBA and we implement adjusted plus-minus models for WNBA teams for the 2019 season to determine which players are the most valuable.  
   
-**Related publications:** (up to 2 references)
-
-* F. Author et al, Journal 2 (5), 1234 (2019)  
-* F. Author et al, Journal 1 (5), 1234 (2018)  
 
 # Problem and Data 
-
-Possible contents for slide  
 
 + Explain the point of adjusted plus minus
 	* Explain previous work in NBA, but lack of work in WNBA
@@ -36,12 +30,41 @@ Possible contents for slide
 
 Possible contents for slide  
 
-* Explanation(s) of methods used to obtain data or perform theoretical modeling  
-* Show variance in coefficient estimates 
+::: {.col data-latex="{0.55\textwidth}"}
+
++ Show first model
+    * Comment about it
++ Second model
+    * Comment about it
+:::
+
+::: {.col data-latex="{0.05\textwidth}"}
+\ 
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+
+::: {.col data-latex="{0.4\textwidth}"}
++ Picture 1
++ Picture 2
+:::
 
 # Results
 
 Possible contents for slide  
 
-* Show table results for both models
-* Conclusion and next steps
+::: {.col data-latex="{0.55\textwidth}"}
+
++ Table 1
++ Table 2
+:::
+
+::: {.col data-latex="{0.05\textwidth}"}
+\ 
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+
+::: {.col data-latex="{0.4\textwidth}"}
++ Conclusions
+:::
