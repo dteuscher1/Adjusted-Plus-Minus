@@ -20,22 +20,21 @@ output:
 
 # Problem and Data 
 
-+ Explain the point of adjusted plus minus
-	* Explain previous work in NBA, but lack of work in WNBA
-	* Explain plus-minus and then APM and RAPM
-	* Explain where the data is from
-+ Ways to measure player value
++ In the WNBA, unlike the NBA, there has not been a lot of work done to evaluate individual player value
++ Plus-minus is a commonly cited statistic that is the total difference between a team's score and the opposing team's score while on the court. Adjusted plus-minus (APM) builds on that idea, but also accounts for the quality of the teammates a player plays with. Regularized adjusted plus-minus (RAPM) is another advanced statistic that improves upon adjusted plus-minus by providing more stable estimates for players and needing less data to provide stable estimates.
++ The play by play data for all 2019 WNBA games was from ESPN and Basketball Reference
 
-# Methods
-
-Possible contents for slide  
+# Models
 
 ::: {.col data-latex="{0.55\textwidth}"}
 
-+ Show first model
-    * Comment about it
-+ Second model
-    * Comment about it
++ APM Model
+    * Multiple linear regression with binary variables for each player indicated if they were on the court for the possession
+    * Requires players to play enough minutes to provide stable coefficient estimates
+    
++ RAPM Model
+    * Ridge regression shrinking the player estimates towards 0
+    * Accounts for multicollineary between players and provides more stable estimates
 :::
 
 ::: {.col data-latex="{0.05\textwidth}"}
@@ -45,18 +44,54 @@ a column separator -->
 :::
 
 ::: {.col data-latex="{0.4\textwidth}"}
-+ Picture 1
-+ Picture 2
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.height = 21, fig.width = 15, fig.align='center'}
+
+load("../Poster.RData")
+library(patchwork)
+plot_apm / plot_rapm
+```
+
+
 :::
 
 # Results
 
-Possible contents for slide  
 
 ::: {.col data-latex="{0.55\textwidth}"}
 
-+ Table 1
-+ Table 2
+\begin{table}[h]
+    \centering
+    \scalebox{.8}{
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+        Player & APM & APM Variance \\ \hline
+        Ashley Walker & 15.848 & 34.767 \\ \hline
+        Asia Taylor & 13.393 & 7.870 \\ \hline
+        Candace Parker & 11.381 & 5.352 \\ \hline
+        Brionna Jones & 11.001 & 6.811 \\ \hline
+        Jessica Breland & 10.258 & 4.758 \\ \hline
+    \end{tabular}
+    }
+    \caption{Top 5 Players (APM)}
+\end{table}
+\ 
+\begin{table}[h]
+    \centering
+    \scalebox{.8}{
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+        Player & RAPM & RAPM Variance \\ \hline
+        Candace Parker & 2.457 & 0.233 \\ \hline
+        Danielle Robinson & 2.367 & 0.239 \\ \hline
+        Sydney Wiese & 2.236 & 0.250 \\ \hline
+        Courtney Vandersloot & 2.131 & 0.181 \\ \hline
+        Jonquel Jones & 2.008 & 0.180 \\ \hline
+    \end{tabular}
+    }
+    \caption{Top 5 Players (RAPM)}
+\end{table}
+
+
 :::
 
 ::: {.col data-latex="{0.05\textwidth}"}
@@ -66,5 +101,8 @@ a column separator -->
 :::
 
 ::: {.col data-latex="{0.4\textwidth}"}
-+ Conclusions
+* Variance for estimates is much smaller for RAPM model
+* Future research includes expanding to multiple years and getting 3-5 RAPM estimates
+* Fitting a Bayesian model
+* Results can be explored with our **[Shiny app](https://david-teuscher.shinyapps.io/AdjustedPlusMinus/)**
 :::
